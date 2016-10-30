@@ -3,7 +3,7 @@
 program mastereq
 implicit none
 
-use runge 
+!use runge 
 
 function 
 
@@ -13,4 +13,4 @@ end fucntion
 
 
 
-end program master eq
+end program mastereq
