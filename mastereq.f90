@@ -7,7 +7,7 @@ implicit none
 
 function 
 
-end fucntion
+end function
 
 
 

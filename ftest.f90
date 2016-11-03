@@ -31,8 +31,6 @@ print*,
 sindex1=size(a, 1)
 print*, sindex1
 
-
-
 end program ftest
 
 subroutine print1matrix(m, siz)
