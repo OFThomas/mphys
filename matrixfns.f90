@@ -29,5 +29,19 @@ function superop()
 
 end function superop
 
+subroutine create(rho,i,j)
+real(kind=dp1), dimension (:,:) :: rho
+integer, intent(in) :: i, j
+
+!a|n> = sqrt(n+1)|n+1>
+
+end subroutine create
+
+subroutine annihilate(rho,i,j)
+
+
+
+end subroutine annihilate
+
 end module matrixfns
 
