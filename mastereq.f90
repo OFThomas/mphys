@@ -8,14 +8,14 @@ integer :: i, n, aloerr
 
 real(kind=dp1) :: root
 
-real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
+real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz
 
 !use runge 
 
 !number of states
-n=6
+n=4
 
-!!!! make creation and anni matrices !!!!!!!!!!!
+!------------------------- Matrix operators  ----------------------!
 allocate(creation(n,n), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating creationop'
 creation=0
@@ -29,6 +29,20 @@ do i=1, n-1
   creation(i+1,i)=root
   annihilation(i,i+1)=root
 end do
+
+allocate(sigmaz(2,2), stat=aloerr)
+if (aloerr/=0) stop 'Error in allocating sigmazop'
+
+sigmaz=0
+sigmaz(1,1)= 1
+sigmaz(2,2)=-1
+
+!---------------- End of operators -----------------------
+
+
+
+
+!--------------- checking correct matrices -----------------
 
 print*, 'creation:'
 do i=1,size(creation, 1)
@@ -46,6 +60,10 @@ do i=1,size(nummatrix, 1)
 print*, nummatrix(i,:)
 end do
 
+print*, 'Sigmaz:'
+do i=1,size(sigmaz, 1)
+print*, sigmaz(i,:)
+end do
 
 
 
