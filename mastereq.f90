@@ -4,13 +4,16 @@ program mastereq
 implicit none
 
 integer, parameter :: dp1=selected_real_kind(15,300)
-integer :: i, n
+integer :: i, n_b, n_a
 
 !Matrix operators
-real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz
+real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, rho
 
-!number of states
-n=4
+!number of states bosonic field
+n_b=100
+
+!number of states atom
+n_a=2
 
 !-Make operator matrices
 call makeoperators
@@ -63,22 +66,28 @@ subroutine makeoperators
 real(kind=dp1) :: root
 integer :: aloerr
 
-allocate(creation(n,n), stat=aloerr)
+allocate(creation(n_b,n_b), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating creationop'
 creation=0
 
-allocate(annihilation(n,n), stat=aloerr)
+allocate(annihilation(n_b,n_b), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating annihilationop'
 annihilation=0
 
-do i=1, n-1
+allocate(sigmaz(n_a,n_a), stat=aloerr)
+if (aloerr/=0) stop 'Error in allocating sigmazop'
+
+allocate(rho(n_b*n_a,n_b*n_a), stat=aloerr)
+if (aloerr/=0) stop 'Error in allocating annihilationop'
+annihilation=0
+
+
+!--------------------- Populate-------------------
+do i=1, n_b-1
   root=dsqrt(real(i,kind=dp1))
   creation(i+1,i)=root
   annihilation(i,i+1)=root
 end do
-
-allocate(sigmaz(2,2), stat=aloerr)
-if (aloerr/=0) stop 'Error in allocating sigmazop'
 
 sigmaz=0
 sigmaz(1,1)= 1
