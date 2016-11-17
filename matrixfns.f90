@@ -24,22 +24,27 @@ end function tproduct
 !Lindblad super operator
 function superop()
 
-
-
-
 end function superop
 
-subroutine create(rho,i,j)
-real(kind=dp1), dimension (:,:) :: rho
-integer, intent(in) :: i, j
 
+
+function creation(n)
+real(kind=dp1), allocatable, dimension (:,:) :: creation
+integer :: i, n
 !a|n> = sqrt(n+1)|n+1>
+creation=0
+do i=1, n-1
+  creation(i+1,i)=sqrt(real(i))
+end do
 
-end subroutine create
+end function create
 
-subroutine annihilate(rho,i,j)
-
-
+function annihilation(n)
+real(kind=dp1), allocatable, dimension (:,:) :: annihilation
+integer :: i, n
+do i=1, n-1
+  annihilation(i,i+1)=sqrt(real(i))
+end do
 
 end subroutine annihilate
 

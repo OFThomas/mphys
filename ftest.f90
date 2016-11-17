@@ -1,6 +1,8 @@
 program ftest
 implicit none
 
+integer, parameter :: dp1=selected_real_kind(15,300)
+integer :: j, n=5
 !qubit
 real, dimension(2) :: g, e
 !Photon 
@@ -8,6 +10,10 @@ real, dimension(100) :: up
 
 real, dimension(2,2) :: a, b
 integer :: i, sindex1, sindex2
+
+
+real(kind=dp1), allocatable, dimension (:,:) :: creation
+allocate (creation(n,n))
 
 a=0
 a(1,1)=1
@@ -30,6 +36,19 @@ print*,
 
 sindex1=size(a, 1)
 print*, sindex1
+
+
+!a|n> = sqrt(n+1)|n+1>
+creation=0
+
+do i=1, n-1
+  creation(i+1,i)=sqrt(real(i))
+end do
+
+print*, 'creation:'
+do i=1,size(creation, 1)
+print*, creation(i,:)
+end do
 
 end program ftest
 
