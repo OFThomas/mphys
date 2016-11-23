@@ -10,7 +10,7 @@ integer :: i, n_b, n_a
 real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, rho, large
 
 !number of states bosonic field
-n_b=2
+n_b=100
 
 !number of states atom
 n_a=2
@@ -20,26 +20,24 @@ call makeoperators
 
 !- Print operators to terminal (testing only)
 !call checkm
-do i=1, size(creation,1)
-print*, creation(i,:)
-end do
-print*, 
-do i=1, size(annihilation,1)
-print*, annihilation(i,:)
-end do
-large= tproduct(creation,annihilation)
+
+large= tproduct(sigmaz,nummatrix)
 do i=1, size(large,1)
-print*, large(i,:)
+print*, large(i,i)
 end do
 
+
+
+! --------------- End of main program --------------------------------!
 contains
 
+!---------------------- Tensor/ Outer Product function --------------------
 function tproduct(a,b)
 
 real(kind=dp1), dimension (:,:), intent(in) :: a, b
 real(kind=dp1), allocatable, dimension(:,:) :: tproduct
 real(kind=dp1), allocatable, dimension(:,:) :: tprod
-integer :: ierr, sindex1, sindex2, n, i,j,k,l, c_col, c_row
+integer :: ierr, sindex1, sindex2, n, i,j,k,l, c_col, c_row, n_a1, n_a2, n_b1, n_b2
 
 sindex1=size(a, 1)*size(b, 1)
 sindex2=size(a, 2)*size(b, 2)
@@ -47,26 +45,40 @@ sindex2=size(a, 2)*size(b, 2)
 allocate(tprod(sindex1, sindex2), stat=ierr)
   if (ierr/=0) stop 'Error in allocating tproduct'
 
-n=size(a,1)
+n_a1=size(a,1)
+n_a2=size(a,2)
+n_b1=size(b,1)
+n_b2=size(b,2)
 c_col=0
 c_row=0
-print *, n
-print*, ' c_col ', ' c_row ', ' k ', ' l ', ' c_col+k ', ' c_row+l '
-do i=1, n
-  do j=1, n
-    do k=1, n
-      do l=1, n
-        tprod(c_col+j,c_row+l) = a(i,j)*b(k,l)
-	print*, c_col, c_row, j, l, c_col+j, c_row+l, tprod(c_col+j,c_row+l)
+!print *, n
+print*, ' c_col ', ' c_row ', ' j ', ' l ', ' c_col+j ', ' c_row+l '
+do i=1, n_a1
+  do j=1, n_a2
+    do k=1, n_b1
+      do l=1, n_b2
+        tprod(c_col+k, c_row+l) = a(i,j)*b(k,l)
+	!print *, c_row+l, c_col+j
+	!print*, i,c_col, c_row, k, l, c_col+k, c_row+l, tprod(c_col+k,c_row+l)
       end do
-      c_row= c_row+n
+      !c_row= c_row+n_b2
+      !c_col=c_col+j
+      !c_col=c_col+k
     end do
-    c_row=0
+    c_row=c_row+n_b2    
+    !c_row=0
+    !c_col=c_col+n_a2
+    !c_col=0
   end do
-  c_col=c_col+n
+  c_row=0
+  !c_col=0
+  !c_col=c_col+n_a1
+  c_col=n_b1
 end do
+
 tproduct=tprod
 end function tproduct
+!---------------------------------- End of Tensor Product --------------------------------
 
 !-------------- Rhodot ---------------------------
 function f1(t, rho) 
@@ -128,6 +140,7 @@ do i=1, n_b-1
   creation(i+1,i)=root
   annihilation(i,i+1)=root
 end do
+nummatrix =matmul(creation, annihilation)
 
 sigmaz=0
 sigmaz(1,1)= 1
@@ -148,7 +161,6 @@ do i=1,size(annihilation, 1)
 print*, annihilation(i,:)
 end do
 
-nummatrix =matmul(creation, annihilation)
 print*, 'Numbermatrix:'
 do i=1,size(nummatrix, 1)
 print*, nummatrix(i,:)
