@@ -21,23 +21,32 @@ call makeoperators
 !- Print operators to terminal (testing only)
 call checkm
 
-large= tproduct(sigmaz,creation)
+large= tproduct(sigmaz, creation)
 do i=1, size(large,1)
 print*, large(i,:)
 end do
-
-
 
 ! --------------- End of main program --------------------------------!
 contains
 
 !---------------------- Tensor/ Outer Product function --------------------
-function tproduct(a,b)
+function tproduct(small,big)
 
-real(kind=dp1), dimension (:,:), intent(in) :: a, b
+real(kind=dp1), dimension (:,:), intent(in) :: small, big
+real(kind=dp1), dimension (:,:), allocatable :: a, b
 real(kind=dp1), allocatable, dimension(:,:) :: tproduct
 real(kind=dp1), allocatable, dimension(:,:) :: tprod
 integer :: ierr, sindex1, sindex2, n, i,j,k,l, c_col, c_row, n_a1, n_a2, n_b1, n_b2
+
+!to make sure a is smaller than b, otherwise the order is wrong as the 
+!reshaping factors c_col & c_row use n_b which must be the bigger matrix
+if (size(small,1) > size(big,1)) then
+	b=small
+	a=big
+else 
+	a=small
+	b=big
+end if
 
 sindex1=size(a, 1)*size(b, 1)
 sindex2=size(a, 2)*size(b, 2)
