@@ -10,7 +10,7 @@ integer :: i, n_b, n_a
 real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, rho, large
 
 !number of states bosonic field
-n_b=100
+n_b=4
 
 !number of states atom
 n_a=2
@@ -19,11 +19,11 @@ n_a=2
 call makeoperators
 
 !- Print operators to terminal (testing only)
-!call checkm
+call checkm
 
-large= tproduct(sigmaz,nummatrix)
+large= tproduct(sigmaz,creation)
 do i=1, size(large,1)
-print*, large(i,i)
+print*, large(i,:)
 end do
 
 
@@ -59,7 +59,7 @@ do i=1, n_a1
       do l=1, n_b2
         tprod(c_col+k, c_row+l) = a(i,j)*b(k,l)
 	!print *, c_row+l, c_col+j
-	!print*, i,c_col, c_row, k, l, c_col+k, c_row+l, tprod(c_col+k,c_row+l)
+	print*, i,c_col, c_row, k, l, c_col+k, c_row+l, tprod(c_col+k,c_row+l)
       end do
       !c_row= c_row+n_b2
       !c_col=c_col+j
