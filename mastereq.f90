@@ -50,28 +50,19 @@ n_b1=size(b,1)
 n_b2=size(b,2)
 c_col=0
 c_row=0
-!print *, n
 print*, ' c_col ', ' c_row ', ' j ', ' l ', ' c_col+j ', ' c_row+l '
 do i=1, n_a1
   do j=1, n_a2
     do k=1, n_b1
       do l=1, n_b2
         tprod(c_col+k, c_row+l) = a(i,j)*b(k,l)
-	!print *, c_row+l, c_col+j
-	print*, i,c_col, c_row, k, l, c_col+k, c_row+l, tprod(c_col+k,c_row+l)
+	! Debugging only !
+	!print*, i,c_col, c_row, k, l, c_col+k, c_row+l, tprod(c_col+k,c_row+l)
       end do
-      !c_row= c_row+n_b2
-      !c_col=c_col+j
-      !c_col=c_col+k
     end do
     c_row=c_row+n_b2    
-    !c_row=0
-    !c_col=c_col+n_a2
-    !c_col=0
   end do
   c_row=0
-  !c_col=0
-  !c_col=c_col+n_a1
   c_col=c_col+n_b1
 end do
 
