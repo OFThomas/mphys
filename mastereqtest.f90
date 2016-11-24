@@ -38,6 +38,16 @@ real(kind=dp1), allocatable, dimension(:,:) :: tproduct
 real(kind=dp1), allocatable, dimension(:,:) :: tprod
 integer :: ierr, sindex1, sindex2, n, i,j,k,l, c_col, c_row, n_a1, n_a2, n_b1, n_b2
 
+!to make sure a is smaller than b, otherwise the order is wrong as the 
+!reshaping factors c_col & c_row use n_b which must be the bigger matrix
+!if (size(small,1) > size(big,1)) then
+!	b=small
+!	a=big
+!else 
+!	a=small
+!	b=big
+!end if
+
 sindex1=size(a, 1)*size(b, 1)
 sindex2=size(a, 2)*size(b, 2)
 
