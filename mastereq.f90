@@ -29,10 +29,35 @@ end do
 ! --------------- End of main program --------------------------------!
 contains
 
+!-------------- Rhodot ---------------------------
+function f1(t, rho) 
+  real (kind=dp1), dimension(:,:) :: v, f1, rho, rhodot
+  real (kind=dp1) :: t, constant=1, gamma=1
+  rhodot= constant*commutator(hamiltonian(1),rho,anti=0) + gamma*lindblad(a,adag,rho,anti=1)
+  f1=rhodot
+end function f1
+!------------------------------------------------------
+!---------------------- Commutator ------------------------------------------
+function commutator(a,b,anti)
+  real(kind=dp1), dimension(:,:) :: a,b, commutator
+  if (anti==1) then
+    commutator = matmul(a,b) + matmul(b,a)
+  else 
+    commutator = matmul(a,b) - matmul(b,a)
+  end if
+end function commutator
+!--------------------------------------------------------------------------
+
+!----------------------- Hamiltonian -----------------------------------
+function hamiltonian(g)
+real(kind=dp1), dimension(:,:) :: hamiltonian
+real(kind=dp1) :: g
+hamiltonian = 1
+end function hamiltonaian
+
 !---------------------- Tensor/ Outer Product function --------------------
 function tproduct(a,b)
 
-!real(kind=dp1), dimension (:,:), intent(in) :: small, big
 real(kind=dp1), dimension (:,:), allocatable :: a, b
 real(kind=dp1), allocatable, dimension(:,:) :: tproduct
 real(kind=dp1), allocatable, dimension(:,:) :: tprod
@@ -50,7 +75,7 @@ n_b1=size(b,1)
 n_b2=size(b,2)
 c_col=0
 c_row=0
-print*, ' c_col ', ' c_row ', ' j ', ' l ', ' c_col+j ', ' c_row+l '
+!print*, ' c_col ', ' c_row ', ' j ', ' l ', ' c_col+j ', ' c_row+l '
 do i=1, n_a1
   do j=1, n_a2
     do k=1, n_b1
@@ -69,15 +94,6 @@ end do
 tproduct=tprod
 end function tproduct
 !---------------------------------- End of Tensor Product --------------------------------
-
-!-------------- Rhodot ---------------------------
-function f1(t, rho) 
-  real (kind=dp1), dimension(3) :: p, v, f1, rho, rhodot
-  real (kind=dp1) :: t
-  rhodot= v
-  f1=rhodot
-end function f1
-!------------------------------------------------------
 
 !---------------------------- R4K ---------------------------------
 !Runge-kutta Sub
@@ -101,7 +117,6 @@ subroutine rk4(h,t,rho)
 end subroutine rk4
 !-----------------------End of R4K-----------------------------
 
-
 !----------------- Allocate matrix operators -------------------
 subroutine makeoperators
 
@@ -122,7 +137,6 @@ if (aloerr/=0) stop 'Error in allocating sigmazop'
 allocate(rho(n_b*n_a,n_b*n_a), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating annihilationop'
 annihilation=0
-
 
 !--------------------- Populate-------------------
 do i=1, n_b-1
