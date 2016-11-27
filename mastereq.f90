@@ -7,24 +7,41 @@ integer, parameter :: dp1=selected_real_kind(15,300)
 integer :: i, n_b, n_a
 
 !Matrix operators
-real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, sigminus, sigplus
+real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, sigmaminus, sigmaplus
 real(kind=dp1), allocatable, dimension (:,:) :: rho, large, aident, bident, ham, test,test2
 
 
 real(kind=dp1), dimension (2) :: aup, adown, atup, atdown
 !number of states bosonic field
-n_b=4
+n_b=3
 
 !number of states atom
 n_a=2
 
 aup = [1,0]
 adown= [0,1]
-print*, aup(:), adown(:)
+!print*, aup(:), adown(:)
 print*,
 
 !-Make operator matrices
  call makeoperators
+
+do i=1, size(sigmaplus,1)
+print*, sigmaplus(i,:) 
+end do
+
+!generate identities in respective spaces
+ aident=identity(n_a)
+ bident=identity(n_b)
+
+!make operators only act on their own system, use tensor product of identity in other space
+sigmaz=tproduct(bident,sigmaz)
+sigmaplus=tproduct(bident,sigmaplus)
+sigmaminus=tproduct(bident,sigmaminus)
+
+nummatrix=tproduct(nummatrix,aident)
+creation=tproduct(creation, aident)
+annihilation=tproduct(annihilation,aident)
 
 !- Print operators to terminal (testing only)
  !call checkm
@@ -36,11 +53,10 @@ end do
 
 !check identity matrices generated correctly
 print*,
-aident=identity(n_a)
+
 do i=1, size(aident,1)
-print*, aident(i,:)
+!print*, aident(i,:)
 end do
-bident=identity(n_b)
 
 !checking tensor product of nummber matrix and a_ident gives correct shape.
 ham = hamiltonian(n_a, n_b, creation, annihilation, adown, aup)
@@ -54,7 +70,7 @@ test=commutator(creation,annihilation,0)
 test2 = matmul(creation,annihilation)
 test2=test2 -matmul(annihilation,creation)
 do i=1, size(test,1)
-print*, test(i,:), test2(i,:)
+!print*, test(i,:), test2(i,:)
 end do
 
 ! --------------- End of main program --------------------------------!
@@ -96,14 +112,16 @@ function hamiltonian(n_a,n_b,creat,anni,adown,aup)
 real(kind=dp1), dimension(:,:), allocatable :: a_i, b_i, creat, anni
 real(kind=dp1), dimension (:) :: adown, aup
 integer :: n_a, n_b
-real(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: hamiltonian
-real(kind=dp1) :: g=1, omega_b=1, omega_a=1
+real(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: hamiltonian, coupling
+real(kind=dp1) :: g=1, omega_b=1, omega_a=2
 a_i=identity(n_a)
 b_i=identity(n_b)
-hamiltonian = omega_b*tproduct(nummatrix,a_i)
+
+coupling= (matmul(creat,sigmaminus) +matmul(sigmaplus,anni) + matmul(creat,sigmaplus) + matmul(sigmaminus,anni))
+hamiltonian = omega_b*nummatrix+0.5_dp1*omega_a*sigmaz + g*coupling
 end function hamiltonian
 
-!---------------------- Tensor/ Outer Product function --------------------
+!---------------------- Tensor Product function --------------------
 function tproduct(a,b)
 
 real(kind=dp1), dimension (:,:), allocatable :: a, b
@@ -182,6 +200,12 @@ annihilation=0
 allocate(sigmaz(n_a,n_a), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating sigmazop'
 
+allocate(sigmaplus(n_a,n_a), stat=aloerr)
+if (aloerr/=0) stop 'Error in allocating sigma+op'
+
+allocate(sigmaminus(n_a,n_a), stat=aloerr)
+if (aloerr/=0) stop 'Error in allocating sigma-op'
+
 allocate(rho(n_b*n_a,n_b*n_a), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating annihilationop'
 annihilation=0
@@ -197,6 +221,12 @@ nummatrix =matmul(creation, annihilation)
 sigmaz=0
 sigmaz(1,1)= 1
 sigmaz(2,2)=-1
+
+sigmaplus=0
+sigmaplus(1,2)=1
+
+sigmaminus=0
+sigmaminus(2,1)=1
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 
