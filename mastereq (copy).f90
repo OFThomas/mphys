@@ -4,13 +4,12 @@ program mastereq
 implicit none
 
 integer, parameter :: dp1=selected_real_kind(15,300)
-integer :: i, n_b, n_a, counter, status ,timesteps
+integer :: i, n_b, n_a, counter, status
 
 !Matrix operators
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
-complex(kind=dp1), allocatable, dimension (:,:) :: rhotemp, large, aident, bident, ham, test,test2
-complex(kind=dp1), allocatable, dimension (:,:,:) :: rho
+complex(kind=dp1), allocatable, dimension (:,:) :: rho, large, aident, bident, ham, test,test2
 
 real(kind=dp1), dimension (2) :: aup, adown, atup, atdown
 
@@ -31,12 +30,11 @@ adown= [0,1]
 !print*, aup(:), adown(:)
 print*,
 
-timesteps=10
 !-Make operator matrices
  call makeoperators
 
 rho = 0
-rho(2,2,1)=1
+rho(2,2)=1
 
 do i=1, size(sigmaplus,1)
 !print*, sigmaplus(i,:) 
@@ -88,17 +86,18 @@ end do
 open(unit=11, file='rho.txt', status='replace', iostat=status)
   if (status/=0) stop 'Error in opening rho output file'
 
-!do i=1, size(rho,1)
-!write(11,*) rho(i,:,1)
-!end do
-!write(11,*) rho
-t=0
-!Increment rho using runge-kutta, save results in rho array
-do counter=1,timesteps-1
-rho(:,:,counter+1)=rk4(0.001_dp1,t,rho(:,:,counter))
+do i=1, size(rho,1)
+write(11,*) rho(i,:)
 end do
 
-write(11,*) rho
+t=0
+do counter=1,2
+call rk4(0.001_dp1,t,rho)
+do i=1, size(rho,1)
+write(11,*) rho(i,:)
+end do
+
+end do
 close(11)
 ! --------------- End of main program --------------------------------!
 contains
@@ -206,9 +205,9 @@ end function tproduct
 !---------------------------- R4K ---------------------------------
 !Runge-kutta Sub
 !f1 is rhodot
-function rk4(h,t,rho)
-    complex(kind=dp1), dimension(:,:), intent(in) :: rho
-    complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: rk4, k_1, k_2, k_3, k_4
+subroutine rk4(h,t,rho)
+    complex(kind=dp1), dimension(:,:) :: rho
+    complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: k_1, k_2, k_3, k_4
     real(kind=dp1) :: t, h
 
     k_1 =h*f1(t, rho)
@@ -219,10 +218,10 @@ function rk4(h,t,rho)
    
     K_4 = h*f1(t+h, rho + k_3)  
     
-    rk4 = rho + (k_1 + 2.0_dp1*k_2 + 2.0_dp1*k_3 + k_4)/6.0_dp1
-    
+    rho = rho + (k_1 + 2.0_dp1*k_2 + 2.0_dp1*k_3 + k_4)/6.0_dp1
+
     t=t+h
-end function rk4
+end subroutine rk4
 !-----------------------End of R4K-----------------------------
 
 !----------------- Allocate matrix operators -------------------
@@ -248,7 +247,7 @@ if (aloerr/=0) stop 'Error in allocating sigma+op'
 allocate(sigmaminus(n_a,n_a), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating sigma-op'
 
-allocate(rho(n_b*n_a,n_b*n_a, timesteps), stat=aloerr)
+allocate(rho(n_b*n_a,n_b*n_a), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating annihilationop'
 annihilation=0
 
