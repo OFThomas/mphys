@@ -4,14 +4,16 @@ program mastereq
 implicit none
 
 integer, parameter :: dp1=selected_real_kind(15,300)
-integer :: i, n_b, n_a
+integer :: i, n_b, n_a, counter
 
 !Matrix operators
 real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, sigmaminus, sigmaplus
 real(kind=dp1), allocatable, dimension (:,:) :: rho, large, aident, bident, ham, test,test2
 
-
 real(kind=dp1), dimension (2) :: aup, adown, atup, atdown
+
+real(kind=dp1) :: t
+
 !number of states bosonic field
 n_b=3
 
@@ -25,6 +27,9 @@ print*,
 
 !-Make operator matrices
  call makeoperators
+
+rho = 0
+rho(2,2)=1
 
 do i=1, size(sigmaplus,1)
 print*, sigmaplus(i,:) 
@@ -59,9 +64,9 @@ do i=1, size(aident,1)
 end do
 
 !checking tensor product of nummber matrix and a_ident gives correct shape.
-ham = hamiltonian(n_a, n_b, creation, annihilation, adown, aup)
+ham = hamiltonian(n_a, n_b, creation, annihilation)
 do i=1, size(ham,1)
-print*, ham(i,:)
+!print*, ham(i,:)
 end do
 print *,
 
@@ -73,6 +78,20 @@ do i=1, size(test,1)
 !print*, test(i,:), test2(i,:)
 end do
 
+open(unit=11, file="rho.txt")
+do i=1, size(rho,1)
+write(11,*) rho(i,:)
+end do
+
+t=0
+do counter=1,10000
+call rk4(0.001_dp1,t,rho)
+do i=1, size(rho,1)
+write(11,*) rho(i,:)
+end do
+
+end do
+close(11)
 ! --------------- End of main program --------------------------------!
 contains
 
@@ -91,7 +110,8 @@ function f1(t, rho)
   real (kind=dp1), dimension(:,:) :: rho
   real(kind=dp1), dimension(size(rho,1),size(rho,2)) :: f1
   real (kind=dp1) :: t, constant=1, gamma=1
-  !f1= constant*commutator(hamiltonian,rho, 0) + gamma*lindblad(a,adag,rho,1)
+  f1= constant*commutator(hamiltonian(n_a, n_b, creation, annihilation),rho, 0) 
+  f1=f1 + gamma*lindblad(n_a,n_b,creation,annihilation,rho,1)
 end function f1
 !------------------------------------------------------
 !---------------------- Commutator ------------------------------------------
@@ -108,9 +128,8 @@ end function commutator
 !--------------------------------------------------------------------------
 
 !----------------------- Hamiltonian -----------------------------------
-function hamiltonian(n_a,n_b,creat,anni,adown,aup)
+function hamiltonian(n_a,n_b,creat,anni)
 real(kind=dp1), dimension(:,:), allocatable :: a_i, b_i, creat, anni
-real(kind=dp1), dimension (:) :: adown, aup
 integer :: n_a, n_b
 real(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: hamiltonian, coupling
 real(kind=dp1) :: g=1, omega_b=1, omega_a=2
@@ -121,6 +140,17 @@ coupling= (matmul(creat,sigmaminus) +matmul(sigmaplus,anni) + matmul(creat,sigma
 hamiltonian = omega_b*nummatrix+0.5_dp1*omega_a*sigmaz + g*coupling
 end function hamiltonian
 
+!--------------- Lindblad -------------------------------------------
+
+function lindblad(n_a,n_b,a,adag,rho,comm)
+real(kind=dp1), dimension(:,:) :: a, adag, rho
+integer :: n_a, n_b, comm
+real(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: lindblad
+
+lindblad = 2.0_dp1*matmul(a,matmul(rho,adag)) - commutator(nummatrix,rho,comm)
+end function lindblad
+
+!-------------------------------------------------------------------
 !---------------------- Tensor Product function --------------------
 function tproduct(a,b)
 
