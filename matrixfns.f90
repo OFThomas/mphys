@@ -31,7 +31,7 @@ function f1(t, rho)
   complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: f1
   real (kind=dp1) :: t, gamma=1
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
-  constant=imaginary
+  constant=-imaginary
   f1= constant*commutator(hamiltonian(n_a, n_b, creation, annihilation),rho, 0) 
   f1=f1 + gamma*lindblad(n_a,n_b,creation,annihilation,rho,1)
 end function f1
@@ -101,14 +101,11 @@ do i=1, n_a1
   do j=1, n_a2
     do k=1, n_b1
       do l=1, n_b2
-        tprod(c_col+k, c_row+l) = a(i,j)*b(k,l)
-      end do
-    end do
-    c_row=c_row+n_b2    
-  end do
-  c_row=0
-  c_col=c_col+n_b1
-end do
+        tprod(k+(i-1)*n_b1, l+(j-1)*n_b2) = a(i,j)*b(k,l)
+      end do !l
+    end do !k
+  end do !j
+end do !i
 
 tproduct=tprod
 end function tproduct

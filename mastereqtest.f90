@@ -7,10 +7,10 @@ integer, parameter :: dp1=selected_real_kind(15,300)
 integer :: i, n_b, n_a
 
 !Matrix operators
-real(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, rho, large
+complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix, sigmaz, rho, large1, large2
 
 !number of states bosonic field
-n_b=4
+n_b=2
 
 !number of states atom
 n_a=2
@@ -18,35 +18,23 @@ n_a=2
 !-Make operator matrices
 call makeoperators
 
-!- Print operators to terminal (testing only)
-call checkm
+large1= tproduct1(nummatrix,sigmaz)
+write(*,*) large1
+large2= tproduct2(nummatrix,sigmaz)
+write(*,*) large2
 
-large= tproduct(nummatrix,sigmaz)
-do i=1, size(large,1)
-print*, large(i,:)
-end do
+write(*,*) large1-large2
 
 ! --------------- End of main program --------------------------------!
 contains
 
-!---------------------- Tensor/ Outer Product function --------------------
-function tproduct(a,b)
+!---------------------- Tensor/ Outer Product function -----------------
+function tproduct2(a,b)
 
-!real(kind=dp1), dimension (:,:), intent(in) :: small, big
-real(kind=dp1), dimension (:,:), allocatable :: a, b
-real(kind=dp1), allocatable, dimension(:,:) :: tproduct
-real(kind=dp1), allocatable, dimension(:,:) :: tprod
+complex(kind=dp1), dimension (:,:), allocatable :: a, b
+complex(kind=dp1), allocatable, dimension(:,:) :: tproduct2
+complex(kind=dp1), allocatable, dimension(:,:) :: tprod
 integer :: ierr, sindex1, sindex2, n, i,j,k,l, c_col, c_row, n_a1, n_a2, n_b1, n_b2
-
-!to make sure a is smaller than b, otherwise the order is wrong as the 
-!reshaping factors c_col & c_row use n_b which must be the bigger matrix
-!if (size(small,1) > size(big,1)) then
-!	b=small
-!	a=big
-!else 
-!	a=small
-!	b=big
-!end if
 
 sindex1=size(a, 1)*size(b, 1)
 sindex2=size(a, 2)*size(b, 2)
@@ -60,65 +48,61 @@ n_b1=size(b,1)
 n_b2=size(b,2)
 c_col=0
 c_row=0
-!print *, n
-print*, ' c_col ', ' c_row ', ' j ', ' l ', ' c_col+j ', ' c_row+l '
 do i=1, n_a1
   do j=1, n_a2
     do k=1, n_b1
       do l=1, n_b2
-        tprod(c_col+k, c_row+l) = a(i,j)*b(k,l)
-	!print *, c_row+l, c_col+j
-	print*, i,c_col, c_row, k, l, c_col+k, c_row+l, tprod(c_col+k,c_row+l)
+        tprod(k+(i-1)*n_b1, l+(j-1)*n_b2) = a(i,j)*b(k,l)
+      end do !l
+    end do !k
+    c_row=c_row+n_b2    
+  end do !j
+  c_row=0
+  c_col=c_col+n_b1
+end do !i
+
+tproduct2=tprod
+end function tproduct2
+
+
+
+!---------------------- Tensor Product function --------------------
+function tproduct1(a,b)
+
+complex(kind=dp1), dimension (:,:), allocatable :: a, b
+complex(kind=dp1), allocatable, dimension(:,:) :: tproduct1
+complex(kind=dp1), allocatable, dimension(:,:) :: tprod
+integer :: ierr, sindex1, sindex2, n, i,j,k,l, c_col, c_row, n_a1, n_a2, n_b1, n_b2
+
+sindex1=size(a, 1)*size(b, 1)
+sindex2=size(a, 2)*size(b, 2)
+
+allocate(tprod(sindex1, sindex2), stat=ierr)
+  if (ierr/=0) stop 'Error in allocating tproduct'
+
+n_a1=size(a,1)
+n_a2=size(a,2)
+n_b1=size(b,1)
+n_b2=size(b,2)
+c_col=0
+c_row=0
+do i=1, n_a1
+  do j=1, n_a2
+    do k=1, n_b1
+      do l=1, n_b2
+        tprod(k+(i-1)*n_b1, l+(j-1)*n_b2) = a(i,j)*b(k,l)
       end do
-      !c_row= c_row+n_b2
-      !c_col=c_col+j
-      !c_col=c_col+k
     end do
     c_row=c_row+n_b2    
-    !c_row=0
-    !c_col=c_col+n_a2
-    !c_col=0
   end do
   c_row=0
-  !c_col=0
-  !c_col=c_col+n_a1
   c_col=c_col+n_b1
 end do
 
-tproduct=tprod
-end function tproduct
-!---------------------------------- End of Tensor Product --------------------------------
+tproduct1=tprod
+end function tproduct1
+!--------------------------- End of Tensor Product -----------------------
 
-!-------------- Rhodot ---------------------------
-function f1(t, rho) 
-  real (kind=dp1), dimension(3) :: p, v, f1, rho, rhodot
-  real (kind=dp1) :: t
-  rhodot= v
-  f1=rhodot
-end function f1
-!------------------------------------------------------
-
-!---------------------------- R4K ---------------------------------
-!Runge-kutta Sub
-!f1 is rhodot
-subroutine rk4(h,t,rho)
-  
-    real(kind=dp1), dimension(3) :: k_1, k_2, k_3, k_4, rho
-    real(kind=dp1) :: t, h
-
-    k_1 =h*f1(t, rho)
-
-    k_2 = h*f1(t+0.5_dp1*h, rho + 0.5_dp1*k_1)
-
-    k_3 = h*f1(t+0.5_dp1*h, rho + 0.5_dp1*k_2)
-   
-    K_4 = h*f1(t+h, rho + k_3)  
-    
-    rho = rho + (k_1 + 2.0_dp1*k_2 + 2.0_dp1*k_3 + k_4)/6.0_dp1
-
-    t=t+h
-end subroutine rk4
-!-----------------------End of R4K-----------------------------
 
 
 !----------------- Allocate matrix operators -------------------
@@ -157,28 +141,4 @@ sigmaz(2,2)=-1
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 
-!--------------- checking correct matrices -----------------
-subroutine checkm
-
-print*, 'creation:'
-do i=1,size(creation, 1)
-print*, creation(i,:)
-end do
-
-print*, 'annihilation:'
-do i=1,size(annihilation, 1)
-print*, annihilation(i,:)
-end do
-
-print*, 'Numbermatrix:'
-do i=1,size(nummatrix, 1)
-print*, nummatrix(i,:)
-end do
-
-print*, 'Sigmaz:'
-do i=1,size(sigmaz, 1)
-print*, sigmaz(i,:)
-end do
-end subroutine checkm
-!--------------------End of Matrix check ----------------
 end program mastereq
