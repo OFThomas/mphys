@@ -8,12 +8,11 @@ integer :: i, n_b, n_a, counter, status ,timesteps
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
 complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil
-complex(kind=dp1), allocatable, dimension (:,:,:) :: rho
+complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob
 real(kind=dp1) :: t
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
 
 contains
-
 !------------------------------ Identity -----------------------------------
 function identity(n)
 real(kind=dp1), dimension(n,n) :: identity
@@ -79,7 +78,7 @@ end function lindblad
 !---------------------- Tensor Product function --------------------
 function tproduct(a,b)
 
-complex(kind=dp1), dimension (:,:), allocatable :: a, b
+complex(kind=dp1), dimension (:,:) :: a, b
 complex(kind=dp1), allocatable, dimension(:,:) :: tproduct
 complex(kind=dp1), allocatable, dimension(:,:) :: tprod
 integer :: ierr, sindex1, sindex2, i,j,k,l, n_a1, n_a2, n_b1, n_b2
@@ -147,8 +146,14 @@ if (aloerr/=0) stop 'Error in allocating sigma+op'
 allocate(sigmaminus(n_a,n_a), stat=aloerr)
 if (aloerr/=0) stop 'Error in allocating sigma-op'
 
+allocate(rhoa(n_a,n_a, timesteps), stat=aloerr)
+if (aloerr/=0) stop 'Error in allocating rhoa'
+
+allocate(rhob(n_b,n_b, timesteps), stat=aloerr)
+if (aloerr/=0) stop 'Error in allocating rhob'
+
 allocate(rho(n_b*n_a,n_b*n_a, timesteps), stat=aloerr)
-if (aloerr/=0) stop 'Error in allocating annihilationop'
+if (aloerr/=0) stop 'Error in allocating rho'
 
 !--------------------- Populate-------------------
 creation=0

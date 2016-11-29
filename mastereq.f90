@@ -8,7 +8,7 @@ implicit none
 real(kind=dp1) :: timestep, total_time
 
 !number of states bosonic field
-n_b=3
+n_b=10
 
 !number of states atom
 n_a=2
@@ -30,9 +30,15 @@ print*, total_time, timestep, timesteps
 !-Make operator matrices
  call makeoperators
 
-!initialising density matrix into groundstate-vacuum photon
-rho = 0
-rho(2,2,1)=1
+!initialising density matrix into vacuum photon
+rhob = 0
+rhob(1,1,1)=1
+!g.s. atom
+rhoa=0
+rhoa(2,2,1)=1
+!total density matrix = tproduct 
+rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
+!rho(2,2,1)=1
 
 ! To write the density matrix out
 open(unit=11, file='rho.txt', status='replace', iostat=status)
