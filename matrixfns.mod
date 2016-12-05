@@ -1,5 +1,5 @@
 GFORTRAN module version '10' created from matrixfns.f90
-MD5:d54fbc75f4f33623e80120e29865f901 -- If you edit this, you'll get what you deserve.
+MD5:456f9e47d0c3d9a92444969707d8d71c -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () () ()
 () () ())
@@ -148,6 +148,9 @@ UNKNOWN IMPLICIT-SAVE 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () () 0 () ()
 DECL UNKNOWN 0 0 ALLOCATABLE DIMENSION FUNCTION ALWAYS_EXPLICIT) (
 COMPLEX 8 0 0 0 COMPLEX ()) 68 0 (69 70) (2 0 DEFERRED () () () ()) 67 ()
 () () 0 0)
+71 'trace' 'matrixfns' '' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL
+UNKNOWN 0 0 FUNCTION ALWAYS_EXPLICIT) (REAL 8 0 0 0 REAL ()) 72 0 (73) ()
+71 () () () 0 0)
 7 'a' '' '' 6 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0
 DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0 ASSUMED_SHAPE
 (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () (CONSTANT (INTEGER 4 0
@@ -230,6 +233,10 @@ CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
 0 DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0
 ASSUMED_SHAPE (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () (
 CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
+73 'a' '' '' 72 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0
+0 DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0
+ASSUMED_SHAPE (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () (
+CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
 )
 
 ('aident' 0 2 'annihilation' 0 3 'bident' 0 4 'commutator' 0 5 'counter'
@@ -238,4 +245,4 @@ CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
 37 'lindblad' 0 38 'makeoperators' 0 46 'matrixfns' 0 47 'n_a' 0 48 'n_b'
 0 49 'nummatrix' 0 50 'rho' 0 51 'rhoa' 0 52 'rhob' 0 53 'rk4' 0 54
 'selected_real_kind' 0 60 'sigmaminus' 0 61 'sigmaplus' 0 62 'sigmaz' 0
-63 'status' 0 64 't' 0 65 'timesteps' 0 66 'tproduct' 0 67)
+63 'status' 0 64 't' 0 65 'timesteps' 0 66 'tproduct' 0 67 'trace' 0 71)

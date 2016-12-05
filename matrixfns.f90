@@ -13,6 +13,22 @@ real(kind=dp1) :: t, coupl
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
 
 contains
+
+!-------------------Trace -------------------------------------------------
+function trace(a)
+real(kind=dp1) :: trace
+complex(kind=dp1), dimension(:,:) :: a
+integer :: i
+trace=0.0_dp1
+if (size(a,1)==size(a,2)) then
+  do i=1, size(a,1)
+    trace=trace+a(i,i)
+  end do
+else 
+  print*, 'Error not a square matrix!'
+end if
+end function trace
+!--------------------------- End of Trace -----------------------------------
 !------------------------------ Identity -----------------------------------
 function identity(n)
 real(kind=dp1), dimension(n,n) :: identity
@@ -55,14 +71,14 @@ function hamiltonian(n_a,n_b,creat,anni, sigz, sigm, sigp, g)
 complex(kind=dp1), dimension(:,:), allocatable :: a_i, b_i, creat, anni, sigz, sigp, sigm
 integer :: n_a, n_b
 complex(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: hamiltonian, wcoupling, scoupling
-real(kind=dp1) :: g, omega_b=1, omega_a=1
+real(kind=dp1) :: g, omega_b=1.0_dp1, omega_a=1.0_dp1
 
 wcoupling= matmul(creat,sigm) +matmul(sigp,anni)
 scoupling = matmul(creat,sigp) + matmul(sigm,anni)
 
-write(*,*) real(wcoupling(1,1) + scoupling(1,1))
+!write(*,*) real(wcoupling(1,1) + scoupling(1,1))
 hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
-write(*,*) real(hamiltonian(1,1))
+!write(*,*) real(hamiltonian(1,1))
 end function hamiltonian
 !----------------------------End of Hamiltonian---------------------------
 
