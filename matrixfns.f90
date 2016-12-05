@@ -44,7 +44,7 @@ end function identity
 function f1(t, rho) 
   complex(kind=dp1), dimension(:,:) :: rho
   complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: f1
-  real (kind=dp1) :: t, gamma=1
+  real (kind=dp1) :: t, gamma=1.0_dp1
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
   constant=-imaginary
 !as H time indep can generate once in make operators and use the matrix to save time.
@@ -212,5 +212,31 @@ sigmaminus(2,1)=1
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 
+subroutine openoutputfiles
+! To write the density matrix out
+open(unit=11, file='rho.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening rho output file'
+
+open(unit=12, file='rho1.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening rho output file'
+
+open(unit=13, file='rhotrace.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening rho output file'
+
+open(unit=14, file='expectation.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening rho output file'
+
+open(unit=20, file='heigen.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening rho output file'
+
+end subroutine openoutputfiles
+
+subroutine closeoutputfiles
+close(11)
+close(12)
+close(13)
+close(14)
+close(20)
+end subroutine closeoutputfiles
 end module matrixfns
 
