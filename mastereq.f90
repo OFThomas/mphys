@@ -8,7 +8,7 @@ implicit none
 real(kind=dp1) :: timestep, total_time
 
 !number of states bosonic field
-n_b=10
+n_b=2
 
 !number of states atom
 n_a=2
@@ -44,6 +44,9 @@ rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
 open(unit=11, file='rho.txt', status='replace', iostat=status)
   if (status/=0) stop 'Error in opening rho output file'
 
+open(unit=12, file='rho1.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening rho output file'
+
 t=0
 !Increment rho using runge-kutta, save results in rho array
 do counter=1,timesteps-1
@@ -53,7 +56,9 @@ end do
 !Initial
 write(11,*) rho(:,:,1)
 write(11,*) rho(:,:,timesteps)
-close(11)
 
+write(12,*) rho(:,:,timesteps) - transpose(conjg(rho(:,:,timesteps)))
+close(11)
+close(12)
 ! --------------- End of main program --------------------------------!
 end program mastereq
