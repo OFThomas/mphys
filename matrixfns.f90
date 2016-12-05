@@ -4,12 +4,12 @@ module matrixfns
 implicit none
 
 integer, parameter :: dp1=selected_real_kind(15,300)
-integer :: i, n_b, n_a, counter, status ,timesteps
+integer :: i, n_b, n_a, counter, status ,timesteps, j
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
-complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil
+complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil, h
 complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob
-real(kind=dp1) :: t
+real(kind=dp1) :: t, coupl
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
 
 contains
@@ -51,15 +51,18 @@ end function commutator
 !-----------------------End of Commutators---------------------------------
 
 !----------------------- Hamiltonian -----------------------------------
-function hamiltonian(n_a,n_b,creat,anni, sigz, sigm, sigp)
+function hamiltonian(n_a,n_b,creat,anni, sigz, sigm, sigp, g)
 complex(kind=dp1), dimension(:,:), allocatable :: a_i, b_i, creat, anni, sigz, sigp, sigm
 integer :: n_a, n_b
 complex(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: hamiltonian, wcoupling, scoupling
-real(kind=dp1) :: g=1, omega_b=1, omega_a=2
+real(kind=dp1) :: g, omega_b=1, omega_a=1
 
 wcoupling= matmul(creat,sigm) +matmul(sigp,anni)
 scoupling = matmul(creat,sigp) + matmul(sigm,anni)
+
+write(*,*) real(wcoupling(1,1) + scoupling(1,1))
 hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
+write(*,*) real(hamiltonian(1,1))
 end function hamiltonian
 !----------------------------End of Hamiltonian---------------------------
 
@@ -189,7 +192,7 @@ sigmaminus(2,1)=1
  annihilation=tproduct(annihilation,aident)
 
 !calculate hamiltonian once 
- hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus)
+ hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, 1.0_dp1)
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 

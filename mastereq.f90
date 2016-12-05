@@ -14,10 +14,9 @@ n_b=2
 n_a=2
 
 !Simulated time
-total_time=1.0_dp1
+total_time=1*1e-3_dp1
 !Time steps
-timestep=1*1e-2_dp1
-
+timestep=1*1e-5_dp1
 timesteps=nint(total_time/timestep)
 print*, 'Time simulated 		', 'Timestep 		', 'Total steps '
 print*, total_time, timestep, timesteps
@@ -47,6 +46,9 @@ open(unit=11, file='rho.txt', status='replace', iostat=status)
 open(unit=12, file='rho1.txt', status='replace', iostat=status)
   if (status/=0) stop 'Error in opening rho output file'
 
+open(unit=20, file='heigen.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening rho output file'
+
 t=0
 !Increment rho using runge-kutta, save results in rho array
 do counter=1,timesteps-1
@@ -57,8 +59,19 @@ end do
 write(11,*) rho(:,:,1)
 write(11,*) rho(:,:,timesteps)
 
-write(12,*) rho(:,:,timesteps) - transpose(conjg(rho(:,:,timesteps)))
+coupl=0
+do j=0,20
+  h=hamiltonian(n_a,n_b,creation,annihilation,sigmaz,sigmaminus,sigmaplus,coupl)
+  !print*, g
+  do i=1,1
+    write(20,*) real(h(i,i),kind=dp1)
+  end do
+  coupl=coupl+0.1_dp1
+end do
+!write(12,*) rho(:,:,timesteps) - transpose(conjg(rho(:,:,timesteps)))
+
 close(11)
 close(12)
+close(20)
 ! --------------- End of main program --------------------------------!
 end program mastereq
