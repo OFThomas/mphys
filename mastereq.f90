@@ -8,13 +8,13 @@ implicit none
 real(kind=dp1) :: timestep, total_time
 
 !number of states bosonic field
-n_b=20
+n_b=2
 
 !number of states atom
 n_a=2
 
 !Simulated time
-total_time=1*1e-6_dp1
+total_time=1*1e-10_dp1
 !Time steps
 timestep=1*1e-10_dp1
 timesteps=nint(total_time/timestep)
@@ -62,7 +62,7 @@ end do
 !  h=hamiltonian(n_a,n_b,creation,annihilation,sigmaz,sigmaminus,sigmaplus,coupl)
 !  !print*, g
 !  do i=1,1
-!    write(20,*) real(h(i,i),kind=dp1)
+!    write(20,*) real(h(2,2),kind=dp1)
 !  end do
 !  coupl=coupl+0.1_dp1
 !end do

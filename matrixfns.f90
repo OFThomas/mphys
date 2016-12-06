@@ -44,12 +44,11 @@ end function identity
 function f1(t, rho) 
   complex(kind=dp1), dimension(:,:) :: rho
   complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: f1
-  real (kind=dp1) :: t, gamma=1.0_dp1
+  real (kind=dp1) :: t, gamma=0.1_dp1
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
   constant=-imaginary
 !as H time indep can generate once in make operators and use the matrix to save time.
-  f1= constant*commutator(hamil,rho, 0) 
-  f1=f1 + gamma*lindblad(n_a,n_b,creation,annihilation,rho,1)
+  f1= constant*commutator(hamil,rho, 0) + gamma*lindblad(n_a,n_b,creation,annihilation,rho,1)
 end function f1
 !-----------------------------End of Rhodot---------------------------------
 
@@ -76,9 +75,14 @@ real(kind=dp1) :: g, omega_b=1.0_dp1, omega_a=1.0_dp1
 wcoupling= matmul(creat,sigm) +matmul(sigp,anni)
 scoupling = matmul(creat,sigp) + matmul(sigm,anni)
 
-!write(*,*) real(wcoupling(1,1) + scoupling(1,1))
+write(*,*) real(matmul(creat,anni))
+!write(*,*) real((sigp))
+write(*,*)
+write(*,*) real(creat)
+write(*,*) real (sigp)
+!write(*,*)
 hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
-!write(*,*) real(hamiltonian(1,1))
+write(*,*) real(hamiltonian(:,:))
 end function hamiltonian
 !----------------------------End of Hamiltonian---------------------------
 
@@ -113,15 +117,15 @@ n_a2=size(a,2)
 n_b1=size(b,1)
 n_b2=size(b,2)
 
-do i=1, n_a1
-  do j=1, n_a2
-    do k=1, n_b1
-      do l=1, n_b2
+do j=1, n_a2
+  do i=1, n_a1
+    do l=1, n_b2
+      do k=1, n_b1
         tprod(k+(i-1)*n_b1, l+(j-1)*n_b2) = a(i,j)*b(k,l)
-      end do !l
-    end do !k
-  end do !j
-end do !i
+      end do !k
+    end do !l
+  end do !i
+end do !j
 
 tproduct=tprod
 end function tproduct
@@ -179,8 +183,8 @@ creation=0
 annihilation=0
 do i=1, n_b-1
   root=dsqrt(real(i,kind=dp1))
-  creation(i+1,i)=root
-  annihilation(i,i+1)=root
+  creation(i,i+1)=root
+  annihilation(i+1,i)=root
 end do
 nummatrix =matmul(creation, annihilation)
 
@@ -189,10 +193,10 @@ sigmaz(1,1)= 1
 sigmaz(2,2)=-1
 
 sigmaplus=0
-sigmaplus(1,2)=1
+sigmaplus(2,1)=1
 
 sigmaminus=0
-sigmaminus(2,1)=1
+sigmaminus(1,2)=1
 
 !generate identities in respective spaces
  aident=identity(n_a)
@@ -208,7 +212,7 @@ sigmaminus(2,1)=1
  annihilation=tproduct(annihilation,aident)
 
 !calculate hamiltonian once 
- hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, 1.0_dp1)
+ hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, 0.25_dp1)
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 
