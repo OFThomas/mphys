@@ -7,7 +7,7 @@ integer, parameter :: dp1=selected_real_kind(15,300)
 integer :: i, n_b, n_a, counter, status ,timesteps, j
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
-complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil, h
+complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil!, h, heigen
 complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob
 real(kind=dp1) :: t, coupl
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
@@ -75,14 +75,15 @@ real(kind=dp1) :: g, omega_b=1.0_dp1, omega_a=1.0_dp1
 wcoupling= matmul(creat,sigm) +matmul(sigp,anni)
 scoupling = matmul(creat,sigp) + matmul(sigm,anni)
 
-write(*,*) real(matmul(creat,anni))
+!write(*,*) real(matmul(creat,anni))
 !write(*,*) real((sigp))
-write(*,*)
-write(*,*) real(creat)
-write(*,*) real (sigp)
 !write(*,*)
-hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
-write(*,*) real(hamiltonian(:,:))
+!write(*,*) real(creat)
+!write(*,*) real (sigp)
+!write(*,*)
+!hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
+hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(matmul((sigm+sigp),(creat+anni)))
+!write(*,*) real(hamiltonian(:,:))
 end function hamiltonian
 !----------------------------End of Hamiltonian---------------------------
 
