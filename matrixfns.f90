@@ -184,8 +184,8 @@ creation=0
 annihilation=0
 do i=1, n_b-1
   root=dsqrt(real(i,kind=dp1))
-  creation(i,i+1)=root
-  annihilation(i+1,i)=root
+  creation(i+1,i)=root
+  annihilation(i,i+1)=root
 end do
 nummatrix =matmul(creation, annihilation)
 
