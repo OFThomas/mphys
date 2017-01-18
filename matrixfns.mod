@@ -1,5 +1,5 @@
 GFORTRAN module version '10' created from matrixfns.f90
-MD5:7f78a7d0dd42460addde0b31af5ff9f2 -- If you edit this, you'll get what you deserve.
+MD5:4314b0c0bd31abfdc955be135476cd71 -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () () ()
 () () ())
@@ -136,24 +136,30 @@ COMPLEX ()) 0 0 () (2 0 DEFERRED () () () ()) 0 () () () 0 0)
 63 'sigmaplus' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN IMPLICIT-SAVE 0 0 ALLOCATABLE DIMENSION) (COMPLEX 8 0 0 0
 COMPLEX ()) 0 0 () (2 0 DEFERRED () () () ()) 0 () () () 0 0)
-64 'sigmaz' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+64 'sigmax' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN IMPLICIT-SAVE 0 0 ALLOCATABLE DIMENSION) (COMPLEX 8 0 0 0
 COMPLEX ()) 0 0 () (2 0 DEFERRED () () () ()) 0 () () () 0 0)
-65 'status' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+65 'sigmay' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN IMPLICIT-SAVE 0 0 ALLOCATABLE DIMENSION) (COMPLEX 8 0 0 0
+COMPLEX ()) 0 0 () (2 0 DEFERRED () () () ()) 0 () () () 0 0)
+66 'sigmaz' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+UNKNOWN IMPLICIT-SAVE 0 0 ALLOCATABLE DIMENSION) (COMPLEX 8 0 0 0
+COMPLEX ()) 0 0 () (2 0 DEFERRED () () () ()) 0 () () () 0 0)
+67 'status' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN IMPLICIT-SAVE 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () () 0 () ()
 () 0 0)
-66 't' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
+68 't' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
 IMPLICIT-SAVE 0 0) (REAL 8 0 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-67 'timesteps' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
+69 'timesteps' 'matrixfns' '' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN IMPLICIT-SAVE 0 0) (INTEGER 4 0 0 0 INTEGER ()) 0 0 () () 0 () ()
 () 0 0)
-68 'tproduct' 'matrixfns' '' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC
+70 'tproduct' 'matrixfns' '' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC
 DECL UNKNOWN 0 0 ALLOCATABLE DIMENSION FUNCTION ALWAYS_EXPLICIT) (
-COMPLEX 8 0 0 0 COMPLEX ()) 69 0 (70 71) (2 0 DEFERRED () () () ()) 68 ()
+COMPLEX 8 0 0 0 COMPLEX ()) 71 0 (72 73) (2 0 DEFERRED () () () ()) 70 ()
 () () 0 0)
-72 'trace' 'matrixfns' '' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL
-UNKNOWN 0 0 FUNCTION ALWAYS_EXPLICIT) (REAL 8 0 0 0 REAL ()) 73 0 (74) ()
-72 () () () 0 0)
+74 'trace' 'matrixfns' '' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL
+UNKNOWN 0 0 FUNCTION ALWAYS_EXPLICIT) (REAL 8 0 0 0 REAL ()) 75 0 (76) ()
+74 () () () 0 0)
 8 'a' '' '' 7 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0
 DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0 ASSUMED_SHAPE
 (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () (CONSTANT (INTEGER 4 0
@@ -228,15 +234,15 @@ DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0 ASSUMED_SHAPE
 60 'size' '(intrinsic)' '' 56 ((PROCEDURE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN UNKNOWN 0 0 FUNCTION) (UNKNOWN 0 0 0 0 UNKNOWN ()) 0 0 () () 60
 () () () 0 0)
-70 'a' '' '' 69 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0
+72 'a' '' '' 71 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0
 0 DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0
 ASSUMED_SHAPE (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () (
 CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
-71 'b' '' '' 69 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0
+73 'b' '' '' 71 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0
 0 DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0
 ASSUMED_SHAPE (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () (
 CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
-74 'a' '' '' 73 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0
+76 'a' '' '' 75 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0
 0 DIMENSION DUMMY) (COMPLEX 8 0 0 0 COMPLEX ()) 0 0 () (2 0
 ASSUMED_SHAPE (CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') () (
 CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
@@ -248,5 +254,6 @@ CONSTANT (INTEGER 4 0 0 0 INTEGER ()) 0 '1') ()) 0 () () () 0 0)
 'imaginary' 0 36 'j' 0 37 'lindblad' 0 38 'makeoperators' 0 46 'matrixfns'
 0 47 'n_a' 0 48 'n_b' 0 49 'nummatrix' 0 50 'openoutputfiles' 0 51 'rho'
 0 52 'rhoa' 0 53 'rhob' 0 54 'rk4' 0 55 'selected_real_kind' 0 61
-'sigmaminus' 0 62 'sigmaplus' 0 63 'sigmaz' 0 64 'status' 0 65 't' 0 66
-'timesteps' 0 67 'tproduct' 0 68 'trace' 0 72)
+'sigmaminus' 0 62 'sigmaplus' 0 63 'sigmax' 0 64 'sigmay' 0 65 'sigmaz'
+0 66 'status' 0 67 't' 0 68 'timesteps' 0 69 'tproduct' 0 70 'trace' 0
+74)

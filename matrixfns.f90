@@ -7,6 +7,7 @@ integer, parameter :: dp1=selected_real_kind(15,300)
 integer :: i, n_b, n_a, counter, status ,timesteps, j
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
+complex(kind=dp1), allocatable, dimension (:,:) :: sigmax, sigmay
 complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil!, h, heigen
 complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob
 real(kind=dp1) :: t, coupl
@@ -208,6 +209,9 @@ sigmaminus(1,2)=1
  sigmaplus=tproduct(bident,sigmaplus)
  sigmaminus=tproduct(bident,sigmaminus)
 
+ sigmax=sigmaminus+sigmaplus
+ sigmay=imaginary*(sigmaminus-sigmaplus)
+
  nummatrix=tproduct(nummatrix,aident)
  creation=tproduct(creation, aident)
  annihilation=tproduct(annihilation,aident)
@@ -226,13 +230,22 @@ open(unit=12, file='rho1.txt', status='replace', iostat=status)
   if (status/=0) stop 'Error in opening rho output file'
 
 open(unit=13, file='rhotrace.txt', status='replace', iostat=status)
-  if (status/=0) stop 'Error in opening rho output file'
+  if (status/=0) stop 'Error in opening rhotrace output file'
 
-open(unit=14, file='expectation.txt', status='replace', iostat=status)
-  if (status/=0) stop 'Error in opening rho output file'
+open(unit=14, file='expectation_n.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening nexpectation output file'
+
+open(unit=15, file='expectation_sigz.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening nexpectation output file'
+
+open(unit=16, file='expectation_sigx.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening nexpectation output file'
+
+open(unit=17, file='expectation_sigy.txt', status='replace', iostat=status)
+  if (status/=0) stop 'Error in opening nexpectation output file'
 
 open(unit=20, file='heigen.txt', status='replace', iostat=status)
-  if (status/=0) stop 'Error in opening rho output file'
+  if (status/=0) stop 'Error in opening heigen output file'
 
 end subroutine openoutputfiles
 
@@ -241,6 +254,9 @@ close(11)
 close(12)
 close(13)
 close(14)
+close(15)
+close(16)
+close(17)
 close(20)
 end subroutine closeoutputfiles
 end module matrixfns

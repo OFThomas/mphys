@@ -13,7 +13,7 @@ complex(kind=dp1), allocatable, dimension(:) :: work
 integer(kind=dp1) :: ok, worksize
 
 !number of states bosonic field
-n_b=40
+n_b=2
 
 !number of states atom
 n_a=2
@@ -21,7 +21,7 @@ n_a=2
 !Simulated time
 total_time=6*1e1_dp1
 !Time steps
-timestep=2*1e-2_dp1
+timestep=1*1e-2_dp1
 timesteps=nint(total_time/timestep)
 print*, 'Time simulated 		', 'Timestep 		', 'Total steps '
 print*, total_time, timestep, timesteps
@@ -34,15 +34,26 @@ print*, total_time, timestep, timesteps
 !-Make operator matrices
  call makeoperators
 
-!initialising density matrix into vacuum photon
 rhob = 0
+rhoa = 0
+!----------------------- Vacuum, ground state ---------------------------------!
+!!initialising density matrix into vacuum photon
+!rhob(1,1,1)=1
+!!g.s. atom
+!rhoa(2,2,1)=1
+
+!----------------------- Highest excited state --------------------------------!
+!rhob(n_b,n_b,1)=1
+!rhoa(1,1,1)=1
+!-------------------------------------------------------------------------------
+!----------------------- Mixed state --------|0><0| x (|g><g| + |e><e|)/2 ------
 rhob(1,1,1)=1
-!g.s. atom
-rhoa=0
-rhoa(2,2,1)=1
+rhoa(1,1,1)=0.5_dp1
+rhoa(2,2,1)=0.5_dp1
+
+
 !total density matrix = tproduct 
 rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
-!rho(2,2,1)=1
 
  call openoutputfiles
 
@@ -60,7 +71,10 @@ write(11,*) real(rho(:,:,timesteps),kind=dp1)
 
 do i=1, timesteps
   write(13,*) trace(rho(:,:,i))
-  write(14,*) trace(matmul(nummatrix(:,:),rho(:,:,i)))
+  write(14,*) trace(matmul(rho(:,:,i),nummatrix(:,:)))
+  write(15,*) trace(matmul(rho(:,:,i),sigmaz(:,:)))
+  write(16,*) trace(matmul(rho(:,:,i),sigmax(:,:)))
+  write(17,*) trace(matmul(rho(:,:,i),sigmay(:,:)))
 end do
 
 !!!! ----------------- Testing eigenspectrum ----------------------
