@@ -13,13 +13,13 @@ complex(kind=dp1), allocatable, dimension(:) :: work
 integer(kind=dp1) :: ok, worksize
 
 !number of states bosonic field
-n_b=2
+n_b=100
 
 !number of states atom
 n_a=2
 
 !Simulated time
-total_time=6*1e1_dp1
+total_time=1*1e-2_dp1
 !Time steps
 timestep=1*1e-2_dp1
 timesteps=nint(total_time/timestep)
@@ -90,23 +90,22 @@ worksize=(int(4.0_dp1*(n_a*n_b)))
 allocate(work(worksize))
 work=0
 coupl=0.0_dp1
+
 !go incrementing the coupling strength calculate the eigen spectra
-do j=0,20
+do j=0,100
   h=hamiltonian(n_a,n_b,creation,annihilation,sigmaz,sigmaminus,sigmaplus,coupl)
   !print*, coupl
-!  do i=1,1
-!    write(20,*) real(h(2,2),kind=dp1)
+
 !!using lapack zgeev subroutine for complex matrix eigenvalues
  call zgeev('N','N', size(h,1), h, size(h,1), heigen, dummy, 1, dummy, 1, work, worksize, work, ok)
+
 if (ok .eq. 0) then
-  !do i=1, size(heigen)
-    write(20,*) coupl,minval(real(heigen,kind=dp1))
-  !end do
+    write(20,*) coupl,real(heigen(:),kind=dp1)
 else
   print*, 'Error with zgeev'
 end if
-  !end do
-  coupl=coupl+0.1_dp1
+
+  coupl=coupl+0.02_dp1
 end do
 
 !-----------------------------------------------------------------------

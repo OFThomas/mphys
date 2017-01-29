@@ -49,7 +49,22 @@ EOF
      set term wxt
      replot
 EOF
- display "./n.png" &
-display "./sigz.png" &
-display "./sigx.png" &
-display "./sigy.png" &
+
+ gnuplot << EOF
+     set xlabel "Coupling, g "
+     set ylabel "En "
+     set yrange [-2.4:3.4]
+     set grid
+     unset key
+     set title "Hamiltonian eigenvalues"
+     set term png
+     set output "./heigen.png"
+     plot for [col=2:101:1] "heigen.txt" using col
+     set term wxt
+     replot
+EOF
+ #display "./n.png" &
+#display "./sigz.png" &
+#display "./sigx.png" &
+#display "./sigy.png" &
+display "./heigen.png" &
