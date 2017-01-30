@@ -59,12 +59,12 @@ EOF
      set title "Hamiltonian eigenvalues"
      set term png
      set output "./heigen.png"
-     plot for [col=2:101:1] "heigen.txt" using col
+    # plot for [col=2:101:1] "heigen.txt" using col
      set term wxt
      replot
 EOF
- #display "./n.png" &
+ display "./n.png" &
 #display "./sigz.png" &
 #display "./sigx.png" &
 #display "./sigy.png" &
-display "./heigen.png" &
+#display "./heigen.png" &

@@ -49,7 +49,7 @@ function f1(t, rho)
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
   constant=-imaginary
 !as H time indep can generate once in make operators and use the matrix to save time.
-  f1= constant*commutator(hamil,rho, 0) + gamma*lindblad(n_a,n_b,creation,annihilation,rho,1)
+  f1= constant*commutator(hamil,rho, 0) + gamma*lindblad(n_a,n_b,annihilation,creation,rho,1)
 end function f1
 !-----------------------------End of Rhodot---------------------------------
 
@@ -58,8 +58,10 @@ function commutator(a,b,anti)
   complex(kind=dp1), dimension(:,:) :: a,b
  complex(kind=dp1), dimension(size(a,1),size(b,2)) :: commutator
   integer :: anti
+!anti for lindlbad
   if (anti==1) then
     commutator = matmul(a,b) + matmul(b,a)
+!regular for all other commutators
   else 
     commutator = matmul(a,b) - matmul(b,a)
   end if
@@ -76,15 +78,8 @@ real(kind=dp1) :: g, omega_b=1.0_dp1, omega_a=1.0_dp1
 wcoupling= matmul(creat,sigm) +matmul(sigp,anni)
 scoupling = matmul(creat,sigp) + matmul(sigm,anni)
 
-!write(*,*) real(matmul(creat,anni))
-!write(*,*) real((sigp))
-!write(*,*)
-!write(*,*) real(creat)
-!write(*,*) real (sigp)
-!write(*,*)
-!hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
-hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(matmul((sigm+sigp),(creat+anni)))
-!write(*,*) real(hamiltonian(:,:))
+hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
+
 end function hamiltonian
 !----------------------------End of Hamiltonian---------------------------
 
@@ -95,7 +90,7 @@ complex(kind=dp1), dimension(:,:) :: a, adag, rho
 integer :: n_a, n_b, comm
 complex(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: lindblad
 !comm=1 for anti commutation
-lindblad = 2.0_dp1*matmul(a,matmul(rho,adag)) - commutator(nummatrix,rho,comm)
+lindblad = 2.0_dp1*matmul(a,matmul(rho,adag)) - commutator(matmul(adag,a),rho,1)
 end function lindblad
 
 !---------------------------End of super operator-------------------------
@@ -217,7 +212,7 @@ sigmaminus(1,2)=1
  annihilation=tproduct(annihilation,aident)
 
 !calculate hamiltonian once 
- hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, 0.25_dp1)
+ hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, 0.1_dp1)
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 
