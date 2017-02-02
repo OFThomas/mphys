@@ -14,10 +14,46 @@ complex(kind=dp1), allocatable, dimension (:,:) :: h
 complex(kind=dp1), allocatable, dimension (:) :: heigen
 complex(kind=dp1), dimension (1,1) :: dummy
 complex(kind=dp1), allocatable, dimension(:) :: work
-real(kind=dp1) :: t, coupl
+real(kind=dp1) :: t, coupl, piconst=4.0_dp1*datan(1.0_dp1)
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
+complex(kind=dp1), allocatable, dimension(:,:) :: paritymatrix
 
 contains
+!------------------------ Exponential of a matrix ----------------------------
+function expmatrix(matrix,n)
+!n is order to truncate to
+complex(kind=dp1), dimension(:,:) :: matrix
+complex(kind=dp1), dimension(size(matrix,1),size(matrix,2)) :: expmatrix
+integer :: n, i
+expmatrix=0
+matrix = matrix * imaginary *piconst
+do i=0,n
+expmatrix=expmatrix+ (matrixmul(matrix,i)/ factorial(i))
+end do
+end function expmatrix
+
+!recursive matrix multiplication up to order n
+recursive function matrixmul(x,n) result(matout)
+complex(kind=dp1), dimension(:,:) :: x
+complex(kind=dp1), dimension(size(x,1),size(x,2)) :: matout
+integer :: n
+if (n == 0) then
+  matout=identity(size(x,1))
+else 
+  matout=matmul(x,matrixmul(x,n-1))/real(n,kind=dp1)
+end if 
+end function matrixmul
+
+!Factorial function 
+recursive function factorial(n) result(nfact)
+integer :: n
+real(kind=dp1) :: nfact
+if (n == 0) then
+  nfact=1
+else 
+  nfact=n*factorial(n-1)
+end if 
+end function factorial
 
 !----------------- Testing eigenspectrum ----------------------
 subroutine heigenspectrum
@@ -69,8 +105,7 @@ end function trace
 function identity(n)
   real(kind=dp1), dimension(n,n) :: identity
   integer, intent(in) :: n
-  integer :: aloerr, i
-  
+  integer :: i
   identity=0
   do i=1,n
     identity(i,i)=1
@@ -99,10 +134,10 @@ function commutator(a,b,anti)
 
 !anti for lindlbad
   if (anti==1) then
-    commutator = matmul(a,b) + matmul(b,a)
+    commutator = matmul(b,a) + matmul(a,b)
 !regular for all other commutators
   else 
-    commutator = matmul(a,b) - matmul(b,a)
+    commutator = matmul(b,a) - matmul(a,b)
   end if
 end function commutator
 !-----------------------End of Commutators---------------------------------
@@ -114,10 +149,10 @@ function hamiltonian(n_a,n_b,creat,anni, sigz, sigm, sigp, g)
   real(kind=dp1), intent(in) :: g
   real(kind=dp1) :: omega_b=1.0_dp1, omega_a=1.0_dp1
 
-  wcoupling= matmul(creat,sigm) +matmul(sigp,anni)
-  scoupling = matmul(creat,sigp) + matmul(sigm,anni)
+  wcoupling= matmul(sigm,creat) +matmul(anni,sigp)
+  scoupling = matmul(sigp,creat) + matmul(anni,sigm)
 
-  hamiltonian = omega_b*matmul(creat,anni)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
+  hamiltonian = omega_b*matmul(anni,creat)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
 
 end function hamiltonian
 !----------------------------End of Hamiltonian---------------------------
@@ -129,7 +164,7 @@ function lindblad(n_a,n_b,a,adag,rho,comm)
   complex(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: lindblad
 
 !comm=1 for anti commutation
-  lindblad = 2.0_dp1*matmul(a,matmul(rho,adag)) - commutator(matmul(adag,a),rho,1)
+  lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - commutator(matmul(a,adag),rho,1)
 end function lindblad
 
 !---------------------------End of super operator-------------------------
@@ -198,17 +233,17 @@ subroutine makeoperators
     if (aloerr/=0) stop 'Error in allocating rhoa'
   allocate(rhob(n_b,n_b, timesteps), stat=aloerr)
     if (aloerr/=0) stop 'Error in allocating rhob'
-  allocate(rho(n_b*n_a,n_b*n_a, timesteps), stat=aloerr)
+  allocate(rho(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
     if (aloerr/=0) stop 'Error in allocating rho'
 !--------------------- Populate-------------------
   creation=0
   annihilation=0
   do i=1, n_b-1
     root=dsqrt(real(i,kind=dp1))
-    creation(i+1,i)=root
-    annihilation(i,i+1)=root
+    creation(i,i+1)=root
+    annihilation(i+1,i)=root
   end do
-  nummatrix =matmul(creation, annihilation)
+  nummatrix =matmul(annihilation,creation)
 
   sigmaz=0
   sigmaz(1,1)= 1
@@ -234,8 +269,6 @@ subroutine makeoperators
   creation=tproduct(creation, aident)
   annihilation=tproduct(annihilation,aident)
 
-!calculate hamiltonian once 
-  !hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, 0.2_dp1)
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 subroutine openoutputfiles
@@ -256,6 +289,8 @@ subroutine openoutputfiles
     if (status/=0) stop 'Error in opening nexpectation output file'
   open(unit=20, file='heigen.txt', status='replace', iostat=status)
     if (status/=0) stop 'Error in opening heigen output file'
+  open(unit=21, file='paritym.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening paritym output file'
 end subroutine openoutputfiles
 
 subroutine closeoutputfiles
@@ -267,5 +302,6 @@ subroutine closeoutputfiles
   close(16)
   close(17)
   close(20)
+  close(21)
 end subroutine closeoutputfiles
 end module matrixfns

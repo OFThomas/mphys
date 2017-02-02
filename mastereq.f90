@@ -10,12 +10,12 @@ integer :: reducedtime,state,findh
 
 !---------------------------- INPUTS----------------------------------------
 !Simulated time
-total_time=60_dp1
+total_time=6_dp1
 !Time steps
 timestep=2*1e-2_dp1
 
 !number of states bosonic field
-n_b=60
+n_b=13
 !number of states atom
 n_a=2
 
@@ -43,6 +43,7 @@ print*, n_b, 'Photon states', n_a, 'Atom states'
 
 !-Make operator matrices
  call makeoperators
+!calculate hamiltonian once to save time as it it T indep
   hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, couplingstrength)
 
 rhob = 0
@@ -74,6 +75,7 @@ rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
 !initialising and splitting into intervals
 t=0
 reducedtime=nint(timesteps/10.0_dp1)
+print*, reducedtime
 
 if (findh==1) then
   call heigenspectrum
@@ -83,7 +85,9 @@ else!run main program
 main:do outerloop=1,10
   do innerloop=1,reducedtime
     counter=innerloop + reducedtime*(outerloop-1)
+    print*, counter
     rho(:,:,counter+1)=rk4(timestep,t,rho(:,:,counter))
+    print*, 'working'
     !normalising
     rho(:,:,counter+1) = rho(:,:,counter+1)/trace(rho(:,:,counter+1))
   end do 
@@ -96,10 +100,11 @@ main:do outerloop=1,10
   !Hermitian check
   if (maxval(abs(rho(:,:,timesteps) - transpose(conjg(rho(:,:,timesteps)))))>=1e-15) then 
    print*,'Rho is not Hermititan EXIT'
-      timesteps=counter+1
+     timesteps=counter+1
       exit main
   end if
 print*, outerloop*10, '% done'
+timesteps=counter+1
 end do main
 
 !Initial values
@@ -126,6 +131,19 @@ print*, trace(rho(:,:,timesteps))
 
   print*,'not finding Hamiltonian eigenspectrum'
 end if
+
+!write(*,*) real(nummatrix,kind=dp1)
+!write(*,*) matrixmul( real(nummatrix,kind=dp1),3)
+
+!write(*,*) fact(50)
+allocate(paritymatrix(n_b*n_a,n_b*n_a))
+
+!write(*,*) real(creation)
+!write(*,*) real(sigmaplus)
+!write(*,*) real(sigmaminus)
+!write(*,*) real(matmul(sigmaminus,sigmaplus))
+paritymatrix=expmatrix((nummatrix+matmul(sigmaminus,sigmaplus)),50)
+write(21,*) paritymatrix
 
  call closeoutputfiles
 ! --------------- End of main program --------------------------------!

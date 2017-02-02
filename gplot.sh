@@ -63,7 +63,7 @@ EOF
      set term wxt
      replot
 EOF
- display "./n.png" &
+# display "./n.png" &
 #display "./sigz.png" &
 #display "./sigx.png" &
 #display "./sigy.png" &
