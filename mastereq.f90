@@ -5,16 +5,12 @@ use matrixfns
 implicit none
 
 real(kind=dp1) :: timestep, total_time, timeout, couplingstrength
-complex(kind=dp1), allocatable, dimension (:,:) :: h
-complex(kind=dp1), allocatable, dimension (:) :: heigen
-complex(kind=dp1), dimension (1,1) :: dummy
-complex(kind=dp1), allocatable, dimension(:) :: work
-integer :: ok,worksize,outerloop,innerloop
+integer :: outerloop,innerloop
 integer :: reducedtime,state,findh
 
 !---------------------------- INPUTS----------------------------------------
 !Simulated time
-total_time=30_dp1
+total_time=60_dp1
 !Time steps
 timestep=2*1e-2_dp1
 
@@ -32,6 +28,7 @@ couplingstrength=0.2_dp1
 !find H eigenspectrum, 0=no,1=yes 
 findh=0
 !-------------------------- END OF INPUTS ----------------------------------
+
 !how many steps to integrate
 timesteps=nint(total_time/timestep)
 !show user simulation parameters
@@ -78,6 +75,10 @@ rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
 t=0
 reducedtime=nint(timesteps/10.0_dp1)
 
+if (findh==1) then
+  call heigenspectrum
+else!run main program
+
 !Increment rho using runge-kutta, save results in rho array
 main:do outerloop=1,10
   do innerloop=1,reducedtime
@@ -116,38 +117,6 @@ do i=1, timesteps
   write(17,*) timeout, trace(matmul(rho(:,:,i),sigmay(:,:)))
 end do
 
-if (findh==1) then
-  !!!! ----------------- Testing eigenspectrum ----------------------
-  !allocate eigenvalue matrix
-  allocate(heigen(n_a*n_b))
-  !allocate work temporary matrix for zgeev subroutine
-  worksize=(int(4.0_dp1*(n_a*n_b)))
-  allocate(work(worksize))
-
-  !initialise matrices
-  heigen =0
-  dummy=0
-  work=0
-  coupl=0.0_dp1
-
-  !go incrementing the coupling strength calculate the eigenspectrum
-  do j=0,1
-    h=hamiltonian(n_a,n_b,creation,annihilation,sigmaz,sigmaminus,sigmaplus,coupl)
-
-    !!using lapack zgeev subroutine for complex matrix eigenvalues
-    call zgeev('N','N', size(h,1), h, size(h,1), heigen, dummy, 1, dummy, 1, work, worksize, work, ok)
-    !check to see if zeegev exited with errors
-    if (ok .eq. 0) then
-      write(20,*) coupl,real(heigen(:),kind=dp1)
-    else
-      print*, 'Error with zgeev'
-    end if
-  coupl=coupl+0.02_dp1
-end do
-else
-  print*,'not finding Hamiltonian eigenspectrum'
-end if 
-!-----------------------------------------------------------------------
 !Writing out final hermitian check t=end
 write(12,*) rho(:,:,timesteps) - transpose(conjg(rho(:,:,timesteps)))
 print*,
@@ -155,6 +124,8 @@ print*,
 print*, maxval(abs(rho(:,:,timesteps) - transpose(conjg(rho(:,:,timesteps)))))
 print*, trace(rho(:,:,timesteps))
 
+  print*,'not finding Hamiltonian eigenspectrum'
+end if
 
  call closeoutputfiles
 ! --------------- End of main program --------------------------------!

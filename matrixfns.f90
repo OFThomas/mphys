@@ -4,15 +4,50 @@ implicit none
 
 integer, parameter :: dp1=selected_real_kind(15,300)
 integer :: i, n_b, n_a, counter, status ,timesteps, j
+integer :: ok,worksize
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmax, sigmay
 complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil
 complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob
+complex(kind=dp1), allocatable, dimension (:,:) :: h
+complex(kind=dp1), allocatable, dimension (:) :: heigen
+complex(kind=dp1), dimension (1,1) :: dummy
+complex(kind=dp1), allocatable, dimension(:) :: work
 real(kind=dp1) :: t, coupl
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
 
 contains
+
+!----------------- Testing eigenspectrum ----------------------
+subroutine heigenspectrum
+  !allocate eigenvalue matrix
+  allocate(heigen(n_a*n_b))
+  !allocate work temporary matrix for zgeev subroutine
+  worksize=(int(4.0_dp1*(n_a*n_b)))
+  allocate(work(worksize))
+  !initialise matrices
+  heigen =0
+  dummy=0
+  work=0
+  coupl=0.0_dp1
+
+  !go incrementing the coupling strength calculate the eigenspectrum
+  do j=0,20
+    print*, coupl
+    h=hamiltonian(n_a,n_b,creation,annihilation,sigmaz,sigmaminus,sigmaplus,coupl)
+
+    !!using lapack zgeev subroutine for complex matrix eigenvalues
+    call zgeev('N','N', size(h,1), h, size(h,1), heigen, dummy, 1, dummy, 1, work, worksize, work, ok)
+    !check to see if zeegev exited with errors
+    if (ok .eq. 0) then
+      write(20,*) coupl,real(heigen(:),kind=dp1)
+    else
+      print*, 'Error with zgeev'
+    end if
+    coupl=coupl+0.1_dp1
+  end do
+end subroutine heigenspectrum
 !-------------------Trace function -----------------------------------------
 function trace(a)
   real(kind=dp1) :: trace
@@ -42,7 +77,6 @@ function identity(n)
   end do
 end function identity
 !-----------------------------End of Identity-------------------------------
-
 !-------------------------------- Rhodot -----------------------------------
 function f1(t, rho) 
   complex(kind=dp1), dimension(:,:), intent(in) :: rho
@@ -57,7 +91,6 @@ constant=-imaginary
   f1= constant*commutator(hamil,rho, 0) + gamma*lindblad(n_a,n_b,annihilation,creation,rho,1)
 end function f1
 !-----------------------------End of Rhodot---------------------------------
-
 !---------------------- Commutator --------------------------------------
 function commutator(a,b,anti)
   complex(kind=dp1), dimension(:,:), intent(in) :: a,b
@@ -73,7 +106,6 @@ function commutator(a,b,anti)
   end if
 end function commutator
 !-----------------------End of Commutators---------------------------------
-
 !----------------------- Hamiltonian -----------------------------------
 function hamiltonian(n_a,n_b,creat,anni, sigz, sigm, sigp, g)
   complex(kind=dp1), dimension(:,:), allocatable, intent(in) :: creat, anni, sigz, sigp, sigm
@@ -89,7 +121,6 @@ function hamiltonian(n_a,n_b,creat,anni, sigz, sigm, sigp, g)
 
 end function hamiltonian
 !----------------------------End of Hamiltonian---------------------------
-
 !------------------------- Lindblad super operator--------------------------
 
 function lindblad(n_a,n_b,a,adag,rho,comm)
@@ -102,7 +133,6 @@ function lindblad(n_a,n_b,a,adag,rho,comm)
 end function lindblad
 
 !---------------------------End of super operator-------------------------
-
 !---------------------- Tensor Product function --------------------
 function tproduct(a,b)
 
@@ -133,7 +163,6 @@ function tproduct(a,b)
   tproduct=tprod
 end function tproduct
 !--------------------------- End of Tensor Product -----------------------
-
 !---------------------------- R4K ---------------------------------
 !Runge-kutta !f1 is rhodot
 function rk4(h,t,rho)
@@ -150,7 +179,6 @@ function rk4(h,t,rho)
   t=t+h
 end function rk4
 !-----------------------End of R4K-----------------------------
-
 !----------------- Allocate matrix operators -------------------
 subroutine makeoperators
   real(kind=dp1) :: root
@@ -210,7 +238,6 @@ subroutine makeoperators
   !hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, 0.2_dp1)
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
-
 subroutine openoutputfiles
 !To write the density matrix out
   open(unit=11, file='rho.txt', status='replace', iostat=status)
