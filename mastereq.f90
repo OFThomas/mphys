@@ -23,7 +23,7 @@ n_a=2
 state=0
 
 !define g
-couplingstrength=0.2_dp1
+couplingstrength=0.1_dp1
 
 !find H eigenspectrum, 0=no,1=yes 
 findh=0
@@ -113,7 +113,7 @@ write(11,*) real(rho(:,:,timesteps),kind=dp1)
 do i=1, timesteps
   timeout=(i-1)*timestep
   write(13,*) timeout, trace(rho(:,:,i))
-  write(14,*) timeout, trace(matmul(creation(:,:),matmul(annihilation(:,:),rho(:,:,i))))
+  write(14,*) timeout, trace(matmul(rho(:,:,i), nummatrix(:,:)))
   write(15,*) timeout, trace(matmul(rho(:,:,i),sigmaz(:,:)))
   write(16,*) timeout, trace(matmul(rho(:,:,i),sigmax(:,:)))
   write(17,*) timeout, trace(matmul(rho(:,:,i),sigmay(:,:)))
