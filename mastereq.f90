@@ -10,12 +10,12 @@ integer :: reducedtime,state,findh
 
 !---------------------------- INPUTS----------------------------------------
 !Simulated time
-total_time=6_dp1
+total_time=80_dp1
 !Time steps
 timestep=2*1e-2_dp1
 
 !number of states bosonic field
-n_b=13
+n_b=60
 !number of states atom
 n_a=2
 
@@ -75,7 +75,6 @@ rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
 !initialising and splitting into intervals
 t=0
 reducedtime=nint(timesteps/10.0_dp1)
-print*, reducedtime
 
 if (findh==1) then
   call heigenspectrum
@@ -85,9 +84,7 @@ else!run main program
 main:do outerloop=1,10
   do innerloop=1,reducedtime
     counter=innerloop + reducedtime*(outerloop-1)
-    print*, counter
     rho(:,:,counter+1)=rk4(timestep,t,rho(:,:,counter))
-    print*, 'working'
     !normalising
     rho(:,:,counter+1) = rho(:,:,counter+1)/trace(rho(:,:,counter+1))
   end do 
@@ -132,16 +129,9 @@ print*, trace(rho(:,:,timesteps))
   print*,'not finding Hamiltonian eigenspectrum'
 end if
 
-!write(*,*) real(nummatrix,kind=dp1)
-!write(*,*) matrixmul( real(nummatrix,kind=dp1),3)
-
 !write(*,*) fact(50)
 allocate(paritymatrix(n_b*n_a,n_b*n_a))
 
-!write(*,*) real(creation)
-!write(*,*) real(sigmaplus)
-!write(*,*) real(sigmaminus)
-!write(*,*) real(matmul(sigmaminus,sigmaplus))
 paritymatrix=expmatrix((nummatrix+matmul(sigmaminus,sigmaplus)),50)
 write(21,*) paritymatrix
 

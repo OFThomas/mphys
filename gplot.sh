@@ -2,6 +2,7 @@
      set xlabel "Time, t "
      set ylabel "<N> "
      set grid
+     set samples 1000
      unset key
      set title "Number operator expectation value"
      set term png
@@ -15,6 +16,7 @@ EOF
      set xlabel "Time, t "
      set ylabel "<Sigmaz> "
      set grid
+     set samples 1000
      unset key
      set title "Sigmaz expectation value"
      set term png
@@ -63,8 +65,8 @@ EOF
      set term wxt
      replot
 EOF
-# display "./n.png" &
-#display "./sigz.png" &
+ display "./n.png" &
+display "./sigz.png" &
 #display "./sigx.png" &
 #display "./sigy.png" &
 #display "./heigen.png" &
