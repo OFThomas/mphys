@@ -10,7 +10,7 @@ integer :: reducedtime,state,findh
 
 !---------------------------- INPUTS----------------------------------------
 !Simulated time
-total_time=80_dp1
+total_time=100_dp1
 !Time steps
 timestep=2*1e-2_dp1
 
@@ -20,7 +20,7 @@ n_b=60
 n_a=2
 
 !initial starting state,0=vacuum, 1=mixed, 2=max_excitations
-state=0
+state=2
 
 !define g
 couplingstrength=0.1_dp1
