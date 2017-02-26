@@ -10,7 +10,7 @@ complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmax, sigmay
 complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil
 complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob
-complex(kind=dp1), allocatable, dimension (:,:) :: h
+complex(kind=dp1), allocatable, dimension (:,:) :: h, leftvect, rightvect
 complex(kind=dp1), allocatable, dimension (:) :: heigen
 complex(kind=dp1), dimension (1,1) :: dummy
 complex(kind=dp1), allocatable, dimension(:) :: work
@@ -27,8 +27,10 @@ complex(kind=dp1), dimension(size(matrix,1),size(matrix,2)) :: expmatrix
 integer :: n, i
 expmatrix=0
 matrix = matrix * imaginary *piconst
+!write(*,*) matrix
 do i=0,n
 expmatrix=expmatrix+ (matrixmul(matrix,i)/ factorial(i))
+!write(*,*) expmatrix(1,1)
 end do
 end function expmatrix
 
@@ -40,7 +42,7 @@ integer :: n
 if (n == 0) then
   matout=identity(size(x,1))
 else 
-  matout=matmul(x,matrixmul(x,n-1))/real(n,kind=dp1)
+  matout=matmul(x,matrixmul(x,n-1))
 end if 
 end function matrixmul
 
@@ -60,8 +62,10 @@ subroutine heigenspectrum
   !allocate eigenvalue matrix
   allocate(heigen(n_a*n_b))
   !allocate work temporary matrix for zgeev subroutine
-  worksize=(int(4.0_dp1*(n_a*n_b)))
+  worksize=(int(65.0_dp1*(n_a*n_b)))
   allocate(work(worksize))
+  allocate(leftvect(n_a*n_b,n_a*n_b))
+  allocate(rightvect(n_a*n_b,n_a*n_b))
   !initialise matrices
   heigen =0
   dummy=0
@@ -74,15 +78,18 @@ subroutine heigenspectrum
     h=hamiltonian(n_a,n_b,creation,annihilation,sigmaz,sigmaminus,sigmaplus,coupl)
 
     !!using lapack zgeev subroutine for complex matrix eigenvalues
-    call zgeev('N','N', size(h,1), h, size(h,1), heigen, dummy, 1, dummy, 1, work, worksize, work, ok)
+    !call zgeev('N','N', size(h,1), h, size(h,1), heigen, dummy, 1, dummy, 1, work, worksize, work, ok)
+    call zgeev('V','V', size(h,1), h, size(h,1), heigen, leftvect, worksize, rightvect, worksize, work, worksize, work, ok)
     !check to see if zeegev exited with errors
     if (ok .eq. 0) then
-      write(20,*) coupl,real(heigen(:),kind=dp1)
+      write(20,*) coupl,(real((heigen(:)),kind=dp1))
+      write(22,*) real(rightvect(:,1), kind=dp1)
     else
       print*, 'Error with zgeev'
     end if
     coupl=coupl+0.1_dp1
   end do
+  
 end subroutine heigenspectrum
 !-------------------Trace function -----------------------------------------
 function trace(a)
@@ -289,6 +296,8 @@ subroutine openoutputfiles
     if (status/=0) stop 'Error in opening nexpectation output file'
   open(unit=20, file='heigen.txt', status='replace', iostat=status)
     if (status/=0) stop 'Error in opening heigen output file'
+  open(unit=22, file='hvectors.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening heigen output file'
   open(unit=21, file='paritym.txt', status='replace', iostat=status)
     if (status/=0) stop 'Error in opening paritym output file'
 end subroutine openoutputfiles
@@ -303,5 +312,6 @@ subroutine closeoutputfiles
   close(17)
   close(20)
   close(21)
+close(22)
 end subroutine closeoutputfiles
 end module matrixfns

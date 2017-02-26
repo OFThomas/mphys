@@ -15,18 +15,18 @@ total_time=100_dp1
 timestep=2*1e-2_dp1
 
 !number of states bosonic field
-n_b=60
+n_b=2
 !number of states atom
 n_a=2
 
 !initial starting state,0=vacuum, 1=mixed, 2=max_excitations
-state=2
+state=0
 
 !define g
 couplingstrength=0.1_dp1
 
 !find H eigenspectrum, 0=no,1=yes 
-findh=0
+findh=1
 !-------------------------- END OF INPUTS ----------------------------------
 
 !how many steps to integrate
@@ -76,6 +76,7 @@ rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
 t=0
 reducedtime=nint(timesteps/10.0_dp1)
 
+!Calculate H eigenspectrum
 if (findh==1) then
   call heigenspectrum
 else!run main program
@@ -128,12 +129,24 @@ print*, trace(rho(:,:,timesteps))
 
   print*,'not finding Hamiltonian eigenspectrum'
 end if
-
-!write(*,*) fact(50)
+!---------------------------------- end of integration ----------------------------------------
 allocate(paritymatrix(n_b*n_a,n_b*n_a))
 
-paritymatrix=expmatrix((nummatrix+matmul(sigmaminus,sigmaplus)),50)
+paritymatrix=expmatrix((nummatrix+matmul(sigmaminus,sigmaplus)),100)
 write(21,*) paritymatrix
+write(*,*) sigmax
+write(*,*) matmul(transpose(conjg(paritymatrix)),matmul(sigmax,paritymatrix))
+write(*,*)
+write(*,*) sigmay
+write(*,*) matmul(transpose(conjg(paritymatrix)),matmul(sigmay,paritymatrix))
+write(*,*)
+write(*,*) hamil-matmul(transpose(conjg(paritymatrix)),matmul(hamil,paritymatrix))
+
+write(*,*) 
+!write(*,*) rho(:,:,timesteps)
+
+ write(*,*) trace(matmul(rho(:,:,timesteps),paritymatrix))
+
 
  call closeoutputfiles
 ! --------------- End of main program --------------------------------!
