@@ -94,7 +94,7 @@ main:do outerloop=1,10
     rho(:,:,counter+1) = rho(:,:,counter+1)/trace(rho(:,:,counter+1))
   end do 
   !Steady state check
-  if (maxval(abs(rho(:,:,counter+1)-rho(:,:,counter)))<=1e-8) then
+  if (maxval(abs(rho(:,:,counter+1)-rho(:,:,counter)))<=1e-10) then
       print*,'steady state exit'
       timesteps=counter+1
       exit main
