@@ -18,7 +18,7 @@ EOF
     new=${name:14}     # remove path 	
     cp $name ./$photonstates$initialstate$new
     data=$(tail ./$photonstates$initialstate$new -n 1)
-    echo $photonstates $data >> ./$new
+    echo $photonstates $data >> ./$initialstate$new
   done
 done
 #./gplot.sh 
