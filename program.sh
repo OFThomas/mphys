@@ -1,5 +1,5 @@
 photonstates=10
-initialstate=1
+initialstate=2
 rm n.txt
 rm sigx.txt
 rm sigy.txt
