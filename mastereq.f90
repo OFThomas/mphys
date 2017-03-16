@@ -12,22 +12,23 @@ integer :: reducedtime,state,findh
 !Simulated time
 total_time=100_dp1
 !Time steps
-timestep=2*1e-2_dp1
+timestep=1*1e-2_dp1
 
-!number of states bosonic field
-n_b=2
+print*, 'number of states bosonic field'
+!n_b=15
+read*, n_b
 !number of states atom
 n_a=2
 
-!initial starting state,0=vacuum, 1=mixed, 2=max_excitations
-state=0
-
+print*, 'initial starting state,0=vacuum, 1=mixed, 2=max_excitations'
+!state=1
+read*, state
 !define g
 couplingstrength=0.1_dp1
 
 !find H eigenspectrum, 0=no,1=yes 
-findh=1
-!-------------------------- END OF INPUTS ----------------------------------
+findh=0
+!------------------------- END OF INPUTS ----------------------------------
 
 !how many steps to integrate
 timesteps=nint(total_time/timestep)
@@ -55,15 +56,18 @@ if (state==0) then
     rhob(1,1,1)=1
     !!g.s. atom
     rhoa(2,2,1)=1
+    print*, 'Vacuum state'
 else if (state==1) then
     !------------- Mixed state ---|0><0| x (|g><g| + |e><e|)/2 ------
     rhob(1,1,1)=1
     rhoa(1,1,1)=0.5_dp1
     rhoa(2,2,1)=0.5_dp1
+    print*, 'Mixed state'
 else if (state==2) then
     !-------------------- Highest excited state -------------------------!
     rhob(n_b,n_b,1)=1
     rhoa(1,1,1)=1
+    print*, 'Maximum excited state'
 else 
     print*, 'please enter a valid state'
 end if 
@@ -106,9 +110,9 @@ timesteps=counter+1
 end do main
 
 !Initial values
-write(11,*) real(rho(:,:,1),kind=dp1)
+write(11,*) abs(rho(:,:,1))!,kind=dp1)
 !Write out final values
-write(11,*) real(rho(:,:,timesteps),kind=dp1)
+write(11,*) abs(rho(:,:,timesteps))!,kind=dp1)
 
 !Expectation values
 do i=1, timesteps
@@ -130,22 +134,25 @@ print*, trace(rho(:,:,timesteps))
   print*,'not finding Hamiltonian eigenspectrum'
 end if
 !---------------------------------- end of integration ----------------------------------------
-allocate(paritymatrix(n_b*n_a,n_b*n_a))
 
-paritymatrix=expmatrix((nummatrix+matmul(sigmaminus,sigmaplus)),100)
 write(21,*) paritymatrix
-write(*,*) sigmax
-write(*,*) matmul(transpose(conjg(paritymatrix)),matmul(sigmax,paritymatrix))
+!write(*,*) sigmax
+!write(*,*) matmul(transpose(conjg(paritymatrix)),matmul(sigmax,paritymatrix))
 write(*,*)
-write(*,*) sigmay
-write(*,*) matmul(transpose(conjg(paritymatrix)),matmul(sigmay,paritymatrix))
+!write(*,*) sigmay
+!write(*,*) matmul(transpose(conjg(paritymatrix)),matmul(sigmay,paritymatrix))
 write(*,*)
-write(*,*) hamil-matmul(transpose(conjg(paritymatrix)),matmul(hamil,paritymatrix))
+!write(*,*) real(hamil)
+!write(*,*) hamil-matmul(transpose(conjg(paritymatrix)),matmul(hamil,paritymatrix))
 
 write(*,*) 
+write(*,*)
+!write(*,*) sigmaz
+!write(*,*) matmul(transpose(conjg(paritymatrix)),matmul(sigmaz,paritymatrix))
 !write(*,*) rho(:,:,timesteps)
 
- write(*,*) trace(matmul(rho(:,:,timesteps),paritymatrix))
+ !write(*,*) trace(matmul(hamil,paritymatrix))
+ write(*,*) maxval(abs(rho(:,:,timesteps) -matmul(transpose(paritymatrix),matmul(rho(:,:,timesteps),paritymatrix))))
 
 
  call closeoutputfiles

@@ -4,7 +4,7 @@ implicit none
 
 integer, parameter :: dp1=selected_real_kind(15,300)
 integer :: i, n_b, n_a, counter, status ,timesteps, j
-integer :: ok,worksize
+integer :: ok,worksize, ldrv,ldlv
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmax, sigmay
@@ -14,6 +14,7 @@ complex(kind=dp1), allocatable, dimension (:,:) :: h, leftvect, rightvect
 complex(kind=dp1), allocatable, dimension (:) :: heigen
 complex(kind=dp1), dimension (1,1) :: dummy
 complex(kind=dp1), allocatable, dimension(:) :: work
+real(kind=dp1), allocatable, dimension(:) :: rwork
 real(kind=dp1) :: t, coupl, piconst=4.0_dp1*datan(1.0_dp1)
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
 complex(kind=dp1), allocatable, dimension(:,:) :: paritymatrix
@@ -27,10 +28,8 @@ complex(kind=dp1), dimension(size(matrix,1),size(matrix,2)) :: expmatrix
 integer :: n, i
 expmatrix=0
 matrix = matrix * imaginary *piconst
-!write(*,*) matrix
 do i=0,n
 expmatrix=expmatrix+ (matrixmul(matrix,i)/ factorial(i))
-!write(*,*) expmatrix(1,1)
 end do
 end function expmatrix
 
@@ -61,11 +60,14 @@ end function factorial
 subroutine heigenspectrum
   !allocate eigenvalue matrix
   allocate(heigen(n_a*n_b))
+  allocate(rwork(2*n_b*n_a))
   !allocate work temporary matrix for zgeev subroutine
-  worksize=(int(65.0_dp1*(n_a*n_b)))
+  worksize=(int(100.0_dp1*(n_a*n_b)))
   allocate(work(worksize))
   allocate(leftvect(n_a*n_b,n_a*n_b))
   allocate(rightvect(n_a*n_b,n_a*n_b))
+  ldlv=n_b*n_a
+  ldrv=n_b*n_a
   !initialise matrices
   heigen =0
   dummy=0
@@ -79,11 +81,15 @@ subroutine heigenspectrum
 
     !!using lapack zgeev subroutine for complex matrix eigenvalues
     !call zgeev('N','N', size(h,1), h, size(h,1), heigen, dummy, 1, dummy, 1, work, worksize, work, ok)
-    call zgeev('V','V', size(h,1), h, size(h,1), heigen, leftvect, worksize, rightvect, worksize, work, worksize, work, ok)
+    call zgeev('V','V', size(h,1), h, size(h,1), heigen, leftvect, ldlv, rightvect, ldrv, work, worksize, rwork, ok)
     !check to see if zeegev exited with errors
     if (ok .eq. 0) then
       write(20,*) coupl,(real((heigen(:)),kind=dp1))
-      write(22,*) real(rightvect(:,1), kind=dp1)
+      write(20,*) real(rightvect)
+      write(20,*) real(leftvect)
+      write(20,*)  real(matmul(matmul(leftvect,h),rightvect))
+    !write(20,*) real(h)  
+    write(22,*) (real(matmul(heigen, paritymatrix), kind=dp1))
     else
       print*, 'Error with zgeev'
     end if
@@ -124,9 +130,9 @@ function f1(t, rho)
   complex(kind=dp1), dimension(:,:), intent(in) :: rho
   complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: f1
   real (kind=dp1), intent(in) :: t
-  real(kind=dp1) :: gamma=0.1_dp1
+  real(kind=dp1) :: gamma
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
-  
+  gamma=0.1_dp1
 constant=-imaginary
 !as H time indep can generate once in make operators 
 !and use the matrix to save time.
@@ -171,7 +177,8 @@ function lindblad(n_a,n_b,a,adag,rho,comm)
   complex(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: lindblad
 
 !comm=1 for anti commutation
-  lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - commutator(matmul(a,adag),rho,1)
+  !lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - commutator(matmul(a,adag),rho,1)
+lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - matmul(matmul(rho,a),adag) - matmul(matmul(a,adag),rho)
 end function lindblad
 
 !---------------------------End of super operator-------------------------
@@ -242,6 +249,8 @@ subroutine makeoperators
     if (aloerr/=0) stop 'Error in allocating rhob'
   allocate(rho(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
     if (aloerr/=0) stop 'Error in allocating rho'
+  allocate(paritymatrix(n_b*n_a,n_b*n_a), stat=aloerr)
+    if (aloerr/=0) stop 'Error in allocating parity'
 !--------------------- Populate-------------------
   creation=0
   annihilation=0
@@ -275,7 +284,8 @@ subroutine makeoperators
   nummatrix=tproduct(nummatrix,aident)
   creation=tproduct(creation, aident)
   annihilation=tproduct(annihilation,aident)
-
+  paritymatrix=0
+  paritymatrix=expmatrix((nummatrix+matmul(sigmaminus,sigmaplus)),100)
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 subroutine openoutputfiles
