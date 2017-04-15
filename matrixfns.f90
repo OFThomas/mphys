@@ -3,13 +3,15 @@ module matrixfns
 implicit none
 
 integer, parameter :: dp1=selected_real_kind(15,300)
-integer :: i, n_b, n_a, counter, status ,timesteps, j
+integer :: i, n_b, n_a, counter, status ,timesteps, j, rabi
 integer :: ok,worksize, ldrv,ldlv
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
+complex(kind=dp1), allocatable, dimension (:,:) :: creation1, annihilation1 
+complex(kind=dp1), allocatable, dimension (:,:) :: creation2, annihilation2 
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
 complex(kind=dp1), allocatable, dimension (:,:) :: sigmax, sigmay
-complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil
-complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob
+complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil, sys1ident
+complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob, rho1, rho2
 complex(kind=dp1), allocatable, dimension (:,:) :: h, leftvect, rightvect
 complex(kind=dp1), allocatable, dimension (:) :: heigen
 complex(kind=dp1), dimension (1,1) :: dummy
@@ -120,65 +122,79 @@ function identity(n)
   integer, intent(in) :: n
   integer :: i
   identity=0
+!make identity matrix nxn
   do i=1,n
     identity(i,i)=1
   end do
 end function identity
 !-----------------------------End of Identity-------------------------------
-!-------------------------------- Rhodot -----------------------------------
+!----------------------------- f1 -- Rhodot ----------------------------------
 function f1(t, rho) 
   complex(kind=dp1), dimension(:,:), intent(in) :: rho
   complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: f1
   real (kind=dp1), intent(in) :: t
-  real(kind=dp1) :: gamma
+  real(kind=dp1) :: gamma, gamma2
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
   gamma=0.1_dp1
+  gamma2=0.1_dp1
 constant=-imaginary
 !as H time indep can generate once in make operators 
 !and use the matrix to save time.
-  f1= constant*commutator(hamil,rho, 0) + gamma*lindblad(n_a,n_b,annihilation,creation,rho,1)
+  if (rabi==0) then
+  f1= constant*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation1,creation1,rho)
+  f1 = f1 + gamma2*lindblad(n_a,n_b,annihilation2,creation2,rho)
+  else
+  f1= constant*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation,creation,rho)
+  end if
+    
 end function f1
-!-----------------------------End of Rhodot---------------------------------
+!-----------------------------End of f1 Rhodot-------------------------------
 !---------------------- Commutator --------------------------------------
-function commutator(a,b,anti)
+function commutator(a,b)
   complex(kind=dp1), dimension(:,:), intent(in) :: a,b
   complex(kind=dp1), dimension(size(a,1),size(b,2)) :: commutator
-  integer, intent(in) :: anti
 
-!anti for lindlbad
-  if (anti==1) then
-    commutator = matmul(b,a) + matmul(a,b)
 !regular for all other commutators
-  else 
     commutator = matmul(b,a) - matmul(a,b)
-  end if
 end function commutator
 !-----------------------End of Commutators---------------------------------
-!----------------------- Hamiltonian -----------------------------------
+!----------------- Rabi Hamiltonian -----------------------------------
 function hamiltonian(n_a,n_b,creat,anni, sigz, sigm, sigp, g)
   complex(kind=dp1), dimension(:,:), allocatable, intent(in) :: creat, anni, sigz, sigp, sigm
   integer, intent(in) :: n_a, n_b
   complex(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: hamiltonian, wcoupling, scoupling
   real(kind=dp1), intent(in) :: g
   real(kind=dp1) :: omega_b=1.0_dp1, omega_a=1.0_dp1
-
+  !Rabi hamiltonian light matter coupling 
   wcoupling= matmul(sigm,creat) +matmul(anni,sigp)
   scoupling = matmul(sigp,creat) + matmul(anni,sigm)
-
+  
   hamiltonian = omega_b*matmul(anni,creat)+0.5_dp1*omega_a*sigz + g*(wcoupling+scoupling)
 
 end function hamiltonian
-!----------------------------End of Hamiltonian---------------------------
+!----------------------------End of Rabi Hamiltonian---------------------------
+
+!---------------------------- Dimer Hamiltonian -------------------------------
+function hdim(n_a,n_b,creat,anni, sigz, sigm, sigp, gcoupling, jcoupling)
+ complex(kind=dp1), dimension(:,:), allocatable, intent(in) :: creat, anni, sigz, sigp, sigm
+  integer, intent(in) :: n_a, n_b
+  complex(kind=dp1), dimension((n_a*n_b)*(n_a*n_b),(n_a*n_b)*(n_a*n_b)) :: hdim
+  real(kind=dp1), intent(in) :: gcoupling, jcoupling
+  print*,'test'
+  hdim = tproduct(hamiltonian(n_a,n_b,creat,anni,sigz,sigm,sigp,gcoupling), sys1ident) 
+  hdim = hdim + tproduct(sys1ident, hamiltonian(n_a,n_b,creat,anni,sigz,sigm,sigp,gcoupling))
+
+  hdim = hdim - jcoupling*(matmul(annihilation2,creation1) + matmul(annihilation1,creation2)) 
+end function hdim
 !------------------------- Lindblad super operator--------------------------
 
-function lindblad(n_a,n_b,a,adag,rho,comm)
+function lindblad(n_a,n_b,a,adag,rho)
   complex(kind=dp1), dimension(:,:), intent(in) :: a, adag, rho
-  integer, intent(in) :: n_a, n_b, comm
-  complex(kind=dp1), dimension(n_a*n_b,n_a*n_b) :: lindblad
-
-!comm=1 for anti commutation
-  !lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - commutator(matmul(a,adag),rho,1)
-lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - matmul(matmul(rho,a),adag) - matmul(matmul(a,adag),rho)
+  integer, intent(in) :: n_a, n_b
+  complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: lindblad
+  print*, size(rho,1), size(a,1)
+!2*a*rho*adag - adag*a*rho - rho*adag*a
+  lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - matmul(matmul(rho,a),adag) - matmul(matmul(a,adag),rho)
 end function lindblad
 
 !---------------------------End of super operator-------------------------
@@ -247,8 +263,19 @@ subroutine makeoperators
     if (aloerr/=0) stop 'Error in allocating rhoa'
   allocate(rhob(n_b,n_b, timesteps), stat=aloerr)
     if (aloerr/=0) stop 'Error in allocating rhob'
-  allocate(rho(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
-    if (aloerr/=0) stop 'Error in allocating rho'
+
+if (rabi == 0) then 
+  allocate(rho1(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
+    if (aloerr/=0) stop 'Error in allocating rho1 D case'
+  allocate(rho2(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
+    if (aloerr/=0) stop 'Error in allocating rho2 D case'
+  allocate(rho((n_b*n_a)*(n_b*n_a),(n_b*n_a)*(n_b*n_a), timesteps+1), stat=aloerr)
+    if (aloerr/=0) stop 'Error in allocating rho Dimer case'
+else 
+    allocate(rho(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
+    if (aloerr/=0) stop 'Error in allocating rho rabi case'
+end if
+
   allocate(paritymatrix(n_b*n_a,n_b*n_a), stat=aloerr)
     if (aloerr/=0) stop 'Error in allocating parity'
 !--------------------- Populate-------------------
@@ -286,6 +313,16 @@ subroutine makeoperators
   annihilation=tproduct(annihilation,aident)
   paritymatrix=0
   paritymatrix=expmatrix((nummatrix+matmul(sigmaminus,sigmaplus)),100)
+
+!make system 1 and system 2 operators
+  sys1ident=identity(n_a*n_b)
+  
+  creation1=tproduct(creation, sys1ident)
+  annihilation1=tproduct(annihilation, sys1ident)
+  
+  creation2=tproduct(sys1ident, creation)
+  annihilation2=tproduct(sys1ident, annihilation)
+
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 subroutine openoutputfiles

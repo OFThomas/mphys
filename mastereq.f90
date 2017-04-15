@@ -4,7 +4,7 @@ program mastereq
 use matrixfns
 implicit none
 
-real(kind=dp1) :: timestep, total_time, timeout, couplingstrength
+real(kind=dp1) :: timestep, total_time, timeout, gcoupl, jcoupl
 integer :: outerloop,innerloop
 integer :: reducedtime,state,findh
 
@@ -19,13 +19,16 @@ print*, 'number of states bosonic field'
 read*, n_b
 !number of states atom
 n_a=2
-
+n_b=1
 print*, 'initial starting state,0=vacuum, 1=mixed, 2=max_excitations'
 !state=1
 read*, state
 !define g
-couplingstrength=0.1_dp1
-
+gcoupl=0.1_dp1
+!define J
+jcoupl=0.0_dp1
+!0 for Dimer, 1 for rabi
+rabi=0
 !find H eigenspectrum, 0=no,1=yes 
 findh=0
 !------------------------- END OF INPUTS ----------------------------------
@@ -45,7 +48,9 @@ print*, n_b, 'Photon states', n_a, 'Atom states'
 !-Make operator matrices
  call makeoperators
 !calculate hamiltonian once to save time as it it T indep
-  hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, couplingstrength)
+  hamil=hamiltonian(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, gcoupl)
+
+  hamil=hdim(n_a, n_b, creation, annihilation, sigmaz, sigmaminus, sigmaplus, gcoupl, jcoupl)
 
 rhob = 0
 rhoa = 0
@@ -72,8 +77,18 @@ else
     print*, 'please enter a valid state'
 end if 
 !total density matrix = tproduct 
-rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
-
+!Dimer or Rabi
+print*, rabi
+if (rabi == 0) then
+  rho1(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
+  rho2(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
+  rho(:,:,1)=tproduct(rho1(:,:,1),rho2(:,:,1))
+else 
+  rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
+end if
+print*, 'assigned rho'
+print*,
+print*, size(rho1,1), size(rho,1)
  call openoutputfiles
 
 !initialising and splitting into intervals
@@ -108,11 +123,22 @@ main:do outerloop=1,10
 print*, outerloop*10, '% done'
 timesteps=counter+1
 end do main
+!--------------------------------- End of main --------------------------------------------------
+!---------------------------------- end of integration ----------------------------------------
 
 !Initial values
 write(11,*) abs(rho(:,:,1))!,kind=dp1)
 !Write out final values
 write(11,*) abs(rho(:,:,timesteps))!,kind=dp1)
+
+
+!------------------------------Write out data --------------------------------------------
+if (rabi==0) then
+
+print*, 'expectation values for 2 system'
+
+else
+!Rabi data
 
 !Expectation values
 do i=1, timesteps
@@ -123,6 +149,11 @@ do i=1, timesteps
   write(16,*) timeout, trace(matmul(rho(:,:,i),sigmax(:,:)))
   write(17,*) timeout, trace(matmul(rho(:,:,i),sigmay(:,:)))
 end do
+!parity check
+write(*,*) maxval(abs(rho(:,:,timesteps) -matmul(transpose(paritymatrix),matmul(rho(:,:,timesteps),paritymatrix))))
+end if
+
+!--------------------------- end of run data -----------------------------------------------
 
 !Writing out final hermitian check t=end
 write(12,*) rho(:,:,timesteps) - transpose(conjg(rho(:,:,timesteps)))
@@ -133,7 +164,7 @@ print*, trace(rho(:,:,timesteps))
 
   print*,'not finding Hamiltonian eigenspectrum'
 end if
-!---------------------------------- end of integration ----------------------------------------
+
 
 write(21,*) paritymatrix
 !write(*,*) sigmax
@@ -152,7 +183,7 @@ write(*,*)
 !write(*,*) rho(:,:,timesteps)
 
  !write(*,*) trace(matmul(hamil,paritymatrix))
- write(*,*) maxval(abs(rho(:,:,timesteps) -matmul(transpose(paritymatrix),matmul(rho(:,:,timesteps),paritymatrix))))
+ 
 
 
  call closeoutputfiles
