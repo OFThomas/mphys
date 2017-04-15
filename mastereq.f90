@@ -183,8 +183,6 @@ write(*,*)
 !write(*,*) rho(:,:,timesteps)
 
  !write(*,*) trace(matmul(hamil,paritymatrix))
- 
-
 
  call closeoutputfiles
 ! --------------- End of main program --------------------------------!
