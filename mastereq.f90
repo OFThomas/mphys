@@ -10,9 +10,9 @@ integer :: reducedtime,state,findh
 
 !---------------------------- INPUTS----------------------------------------
 !Simulated time
-total_time=100_dp1
+total_time=200_dp1
 !Time steps
-timestep=1*1e-2_dp1
+timestep=2*1e-2_dp1
 
 print*, 'number of states bosonic field'
 !n_b=15
@@ -20,13 +20,17 @@ read*, n_b
 !number of states atom
 n_a=2
 
-print*, 'initial starting state,0=vacuum, 1=mixed, 2=max_excitations'
+print*, 'initial starting state,0=vacuum, 1=mixed, 2=max_excitations, 3=max photons atom g.s.'
 !state=1
 read*, state
 !define g
 gcoupl=0.1_dp1
 !define J
 jcoupl=0.1_dp1
+print*, 'enter light-matter coupling (g)'
+read*, gcoupl
+print*, 'enter Photon tunelling strength (J)'
+read*, jcoupl
 !0 for Dimer, 1 for rabi
 rabi=0
 !find H eigenspectrum, 0=no,1=yes 
@@ -79,6 +83,11 @@ else if (state==2) then
     rhob(n_b,n_b,1)=1
     rhoa(1,1,1)=1
     print*, 'Maximum excited state'
+else if (state==3) then
+    !--------------------- max photons, atom g.s.-------------------------
+    rhob(n_b,n_b,1)=1
+    rhoa(2,2,1)=1
+    print*, 'max photons, atom g.s. state'
 else 
     print*, 'please enter a valid state'
 end if 
@@ -115,7 +124,7 @@ main:do outerloop=1,10
     rho(:,:,counter+1) = rho(:,:,counter+1)/trace(rho(:,:,counter+1))
   end do 
   !Steady state check
-  if (maxval(abs(rho(:,:,counter+1)-rho(:,:,counter)))<=1e-10) then
+  if (maxval(abs(rho(:,:,counter+1)-rho(:,:,counter)))<=1e-8) then
       print*,'steady state exit'
       timesteps=counter+1
       exit main
