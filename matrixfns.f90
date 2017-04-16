@@ -23,7 +23,6 @@ complex(kind=dp1), dimension (1,1) :: dummy
 complex(kind=dp1), allocatable, dimension(:) :: work
 real(kind=dp1), allocatable, dimension(:) :: rwork
 real(kind=dp1) :: t, coupl, piconst=4.0_dp1*datan(1.0_dp1)
-real(kind=dp1) :: gamma=0.1_dp1, gamma2=0.1_dp1
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
 complex(kind=dp1), allocatable, dimension(:,:) :: paritymatrix
 
@@ -140,14 +139,14 @@ function f1(t, rho)
   real (kind=dp1), intent(in) :: t
   real(kind=dp1) :: gamma, gamma2
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
-  !gamma=0.1_dp1
-  !gamma2=0.1_dp1
-!constant=-imaginary
+  gamma=0.1_dp1
+  gamma2=0.1_dp1
+  constant=-imaginary
 
 !as H time indep can generate once in make operators 
 !and use the matrix to save time.
   if (rabi==0) then
-  f1= -imaginary*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation1,creation1,rho)
+  f1= constant*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation1,creation1,rho)
   f1 = f1 + gamma2*lindblad(n_a,n_b,annihilation2,creation2,rho)
   else
   f1= constant*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation,creation,rho)

@@ -148,8 +148,8 @@ do i=1, timesteps
   write(13,*) timeout, trace(rho(:,:,i))
   write(14,*) timeout, trace(matmul(rho(:,:,i), nummatrix1(:,:))),trace(matmul(rho(:,:,i), nummatrix2(:,:)))
   write(15,*) timeout, trace(matmul(rho(:,:,i),sigmaz1(:,:))), trace(matmul(rho(:,:,i),sigmaz2(:,:)))
-  write(16,*) timeout, trace(matmul(rho(:,:,i),sigmax1(:,:))), trace(matmul(rho(:,:,i),sigmax2(:,:)))
-  write(17,*) timeout, trace(matmul(rho(:,:,i),sigmay1(:,:))), trace(matmul(rho(:,:,i),sigmay2(:,:)))
+  !write(16,*) timeout, trace(matmul(rho(:,:,i),sigmax1(:,:))), trace(matmul(rho(:,:,i),sigmax2(:,:)))
+  !write(17,*) timeout, trace(matmul(rho(:,:,i),sigmay1(:,:))), trace(matmul(rho(:,:,i),sigmay2(:,:)))
   
   write(31,*) timeout, trace(matmul(rho(:,:,i),matmul(annihilation2,creation1)))
   write(32,*) timeout, trace(matmul(rho(:,:,i),matmul(sigmaminus1,creation1)))
