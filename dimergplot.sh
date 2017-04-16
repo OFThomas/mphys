@@ -11,7 +11,7 @@ set term wxt
 replot
 eof
 
-display "./dimerallcor.png" &
+#display "./dimerallcor.png" &
 
 #convert -density 300 .eps -resize 1024x1024 image.jpg
 #set term postscript eps
