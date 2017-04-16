@@ -19,14 +19,14 @@ print*, 'number of states bosonic field'
 read*, n_b
 !number of states atom
 n_a=2
-n_b=1
+
 print*, 'initial starting state,0=vacuum, 1=mixed, 2=max_excitations'
 !state=1
 read*, state
 !define g
 gcoupl=0.1_dp1
 !define J
-jcoupl=0.0_dp1
+jcoupl=0.1_dp1
 !0 for Dimer, 1 for rabi
 rabi=0
 !find H eigenspectrum, 0=no,1=yes 
@@ -54,6 +54,12 @@ print*, n_b, 'Photon states', n_a, 'Atom states'
 
 rhob = 0
 rhoa = 0
+rhob2 =0
+rhoa2 =0
+
+rhob2(1,1,1)=1
+rhoa2(2,2,1)=1
+
 !specifying initial state
 if (state==0) then
     !-------------- Vacuum, ground state ---------------------------------!
@@ -81,7 +87,7 @@ end if
 print*, rabi
 if (rabi == 0) then
   rho1(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
-  rho2(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
+  rho2(:,:,1)=tproduct(rhob2(:,:,1),rhoa2(:,:,1))
   rho(:,:,1)=tproduct(rho1(:,:,1),rho2(:,:,1))
 else 
   rho(:,:,1)=tproduct(rhob(:,:,1),rhoa(:,:,1))
@@ -136,6 +142,27 @@ write(11,*) abs(rho(:,:,timesteps))!,kind=dp1)
 if (rabi==0) then
 
 print*, 'expectation values for 2 system'
+
+do i=1, timesteps
+  timeout=(i-1)*timestep
+  write(13,*) timeout, trace(rho(:,:,i))
+  write(14,*) timeout, trace(matmul(rho(:,:,i), nummatrix1(:,:))),trace(matmul(rho(:,:,i), nummatrix2(:,:)))
+  write(15,*) timeout, trace(matmul(rho(:,:,i),sigmaz1(:,:))), trace(matmul(rho(:,:,i),sigmaz2(:,:)))
+  write(16,*) timeout, trace(matmul(rho(:,:,i),sigmax1(:,:))), trace(matmul(rho(:,:,i),sigmax2(:,:)))
+  write(17,*) timeout, trace(matmul(rho(:,:,i),sigmay1(:,:))), trace(matmul(rho(:,:,i),sigmay2(:,:)))
+  
+  write(31,*) timeout, trace(matmul(rho(:,:,i),matmul(annihilation2,creation1)))
+  write(32,*) timeout, trace(matmul(rho(:,:,i),matmul(sigmaminus1,creation1)))
+  write(33,*) timeout, trace(matmul(rho(:,:,i),matmul(sigmaminus2,creation1)))
+
+  !write(34,*) timeout, trace(matmul(rho(:,:,i),matmul(annihilation1,creation2)))
+  write(35,*) timeout, trace(matmul(rho(:,:,i),matmul(sigmaminus1,creation2)))
+  write(36,*) timeout, trace(matmul(rho(:,:,i),matmul(sigmaminus2,creation2)))
+
+  write(37,*) timeout, trace(matmul(rho(:,:,i),matmul(sigmaminus2,sigmaplus1)))
+  !write(38,*) timeout, trace(matmul(rho(:,:,i),matmul(sigmaminus1,sigmaplus2)))
+
+end do
 
 else
 !Rabi data

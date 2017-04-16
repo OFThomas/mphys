@@ -8,16 +8,22 @@ integer :: ok,worksize, ldrv,ldlv
 complex(kind=dp1), allocatable, dimension (:,:) :: creation, annihilation, nummatrix
 complex(kind=dp1), allocatable, dimension (:,:) :: creation1, annihilation1 
 complex(kind=dp1), allocatable, dimension (:,:) :: creation2, annihilation2 
-complex(kind=dp1), allocatable, dimension (:,:) :: sigmaz, sigmaminus, sigmaplus
-complex(kind=dp1), allocatable, dimension (:,:) :: sigmax, sigmay
+complex(kind=dp1), allocatable, dimension (:,:) :: nummatrix1, nummatrix2
+complex(kind=dp1), allocatable, dimension (:,:) :: sigmaminus1, sigmaplus1 
+complex(kind=dp1), allocatable, dimension (:,:) :: sigmaminus2, sigmaplus2 
+complex(kind=dp1), allocatable, dimension (:,:) :: sigmaminus, sigmaplus
+complex(kind=dp1), allocatable, dimension (:,:) :: sigmax, sigmay, sigmaz
+complex(kind=dp1), allocatable, dimension (:,:) :: sigmax1, sigmay1, sigmaz1
+complex(kind=dp1), allocatable, dimension (:,:) :: sigmax2, sigmay2, sigmaz2
 complex(kind=dp1), allocatable, dimension (:,:) :: aident, bident, hamil, sys1ident
-complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob, rho1, rho2
+complex(kind=dp1), allocatable, dimension (:,:,:) :: rho, rhoa, rhob, rho1, rho2, rhoa2,rhob2 
 complex(kind=dp1), allocatable, dimension (:,:) :: h, leftvect, rightvect
 complex(kind=dp1), allocatable, dimension (:) :: heigen
 complex(kind=dp1), dimension (1,1) :: dummy
 complex(kind=dp1), allocatable, dimension(:) :: work
 real(kind=dp1), allocatable, dimension(:) :: rwork
 real(kind=dp1) :: t, coupl, piconst=4.0_dp1*datan(1.0_dp1)
+real(kind=dp1) :: gamma=0.1_dp1, gamma2=0.1_dp1
 complex(kind=dp1) :: imaginary=(0.0_dp1,1.0_dp1)
 complex(kind=dp1), allocatable, dimension(:,:) :: paritymatrix
 
@@ -90,8 +96,7 @@ subroutine heigenspectrum
       write(20,*) real(rightvect)
       write(20,*) real(leftvect)
       write(20,*)  real(matmul(matmul(leftvect,h),rightvect))
-    !write(20,*) real(h)  
-    write(22,*) (real(matmul(heigen, paritymatrix), kind=dp1))
+      write(22,*) (real(matmul(heigen, paritymatrix), kind=dp1))
     else
       print*, 'Error with zgeev'
     end if
@@ -135,13 +140,14 @@ function f1(t, rho)
   real (kind=dp1), intent(in) :: t
   real(kind=dp1) :: gamma, gamma2
   complex(kind=dp1) :: constant, imaginary=(0.0_dp1,1.0_dp1)
-  gamma=0.1_dp1
-  gamma2=0.1_dp1
-constant=-imaginary
+  !gamma=0.1_dp1
+  !gamma2=0.1_dp1
+!constant=-imaginary
+
 !as H time indep can generate once in make operators 
 !and use the matrix to save time.
   if (rabi==0) then
-  f1= constant*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation1,creation1,rho)
+  f1= -imaginary*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation1,creation1,rho)
   f1 = f1 + gamma2*lindblad(n_a,n_b,annihilation2,creation2,rho)
   else
   f1= constant*commutator(hamil,rho) + gamma*lindblad(n_a,n_b,annihilation,creation,rho)
@@ -180,7 +186,7 @@ function hdim(n_a,n_b,creat,anni, sigz, sigm, sigp, gcoupling, jcoupling)
   integer, intent(in) :: n_a, n_b
   complex(kind=dp1), dimension((n_a*n_b)*(n_a*n_b),(n_a*n_b)*(n_a*n_b)) :: hdim
   real(kind=dp1), intent(in) :: gcoupling, jcoupling
-  print*,'test'
+
   hdim = tproduct(hamiltonian(n_a,n_b,creat,anni,sigz,sigm,sigp,gcoupling), sys1ident) 
   hdim = hdim + tproduct(sys1ident, hamiltonian(n_a,n_b,creat,anni,sigz,sigm,sigp,gcoupling))
 
@@ -192,7 +198,7 @@ function lindblad(n_a,n_b,a,adag,rho)
   complex(kind=dp1), dimension(:,:), intent(in) :: a, adag, rho
   integer, intent(in) :: n_a, n_b
   complex(kind=dp1), dimension(size(rho,1),size(rho,2)) :: lindblad
-  print*, size(rho,1), size(a,1)
+
 !2*a*rho*adag - adag*a*rho - rho*adag*a
   lindblad = 2.0_dp1*matmul(matmul(adag,rho),a) - matmul(matmul(rho,a),adag) - matmul(matmul(a,adag),rho)
 end function lindblad
@@ -263,8 +269,12 @@ subroutine makeoperators
     if (aloerr/=0) stop 'Error in allocating rhoa'
   allocate(rhob(n_b,n_b, timesteps), stat=aloerr)
     if (aloerr/=0) stop 'Error in allocating rhob'
-
-if (rabi == 0) then 
+  allocate(rhoa2(n_a,n_a, timesteps), stat=aloerr)
+    if (aloerr/=0) stop 'Error in allocating rhoa2'
+  allocate(rhob2(n_b,n_b, timesteps), stat=aloerr)
+    if (aloerr/=0) stop 'Error in allocating rhob2'
+if (rabi == 0) then
+  
   allocate(rho1(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
     if (aloerr/=0) stop 'Error in allocating rho1 D case'
   allocate(rho2(n_b*n_a,n_b*n_a, timesteps+1), stat=aloerr)
@@ -317,12 +327,26 @@ end if
 !make system 1 and system 2 operators
   sys1ident=identity(n_a*n_b)
   
+  sigmaplus1=tproduct(sigmaplus, sys1ident)
+  sigmaminus1=tproduct(sigmaminus, sys1ident)
+  sigmax1=tproduct(sigmax, sys1ident)
+  sigmay1=tproduct(sigmay, sys1ident)
+  sigmaz1=tproduct(sigmaz, sys1ident)
+
   creation1=tproduct(creation, sys1ident)
   annihilation1=tproduct(annihilation, sys1ident)
+  nummatrix1=matmul(annihilation1,creation1)
   
+
+  sigmaplus2=tproduct(sys1ident,sigmaplus)
+  sigmaminus2=tproduct(sys1ident,sigmaminus)
+  sigmax2=tproduct(sys1ident, sigmax)
+  sigmay2=tproduct(sys1ident, sigmay)
+  sigmaz2=tproduct(sys1ident, sigmaz)
+ 
   creation2=tproduct(sys1ident, creation)
   annihilation2=tproduct(sys1ident, annihilation)
-
+  nummatrix2=matmul(annihilation2,creation2)
 end subroutine makeoperators
 !------------------------- End of operators -----------------------
 subroutine openoutputfiles
@@ -347,6 +371,26 @@ subroutine openoutputfiles
     if (status/=0) stop 'Error in opening heigen output file'
   open(unit=21, file='paritym.txt', status='replace', iostat=status)
     if (status/=0) stop 'Error in opening paritym output file'
+
+open(unit=31, file='dimerexpadag1a2.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+open(unit=32, file='dimerexpadag1sigm1.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+open(unit=33, file='dimerexpadag1sigm2.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+
+open(unit=34, file='dimerexpadag2a1.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+open(unit=35, file='dimerexpadag2sigm1.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+open(unit=36, file='dimerexpadag2sigm2.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+
+open(unit=37, file='dimerexpsigp1sigm2.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+open(unit=38, file='dimerexpsigp2sigm1.txt', status='replace', iostat=status)
+    if (status/=0) stop 'Error in opening dimerexp output file'
+
 end subroutine openoutputfiles
 
 subroutine closeoutputfiles
