@@ -1,7 +1,7 @@
 photonstates=5
 initialstate=3
 
-gcoupl=0.2
+gcoupl=0.1
 end_gcoupl=1
 gincr=0.2
 
