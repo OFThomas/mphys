@@ -1,25 +1,39 @@
 photonstates=5
 initialstate=3
-#rm ($initialstate)n.txt
-#rm sigx.txt
-#rm sigy.txt
-#rm sigz.txt
+
+gcoupl=0.2
+end_gcoupl=1
+gincr=0.2
+
+jcoupl=0.5
+
 gfortran matrixfns.f90 mastereq.f90 -o mastereq.out -llapack -lblas
 
-#time for initialstate in {0..2}
-#do
-  time for photonstates in {4..40..2}
-  do
-    time ./mastereq.out << EOF
-    $photonstates
-    $initialstate
-EOF
+ time while [ 0 -lt $(echo $gcoupl $end_gcoupl | awk '{if ($1<=$2) print 1; else print 0;}') ]
 
-    for name in ./expectation_*.txt
+do
+  time ./mastereq.out << EOF
+  $photonstates
+  $initialstate
+  $gcoupl
+  $jcoupl
+EOF
+  ./dimergplot.sh
+  for nameexp in ./expectation_*.txt
     do
-      new=${name:14}     # remove path 	
-      cp $name ./expectation/$photonstates$initialstate$new
-      data=$(tail ./expectation/$photonstates$initialstate$new -n 1)
-      echo $photonstates $data >> ./expectation/$initialstate$new
-    done
+      new=${nameexp:14}     # remove path 	
+      cp $nameexp ./dimer/$photonstates$initialstate$new$gcoupl$jcoupl
+      data=$(tail ./dimer/$photonstates$initialstate$new$gcoupl$jcoupl -n 1)
+      echo $photonstates $data >> ./dimer/$initialstate$new$gcoupl$jcoupl
   done
+  
+  for name in ./dimer*.txt
+    do
+      new=${name:7}     # remove path 	
+      cp $name ./dimer/$photonstates$initialstate$new$gcoupl$jcoupl
+      data=$(tail ./dimer/$photonstates$initialstate$new$gcoupl$jcoupl -n 1)
+      echo $photonstates $data >> ./dimer/$initialstate$new$gcoupl$jcoupl
+  done
+  
+gcoupl=$(echo $gcoupl $gincr | awk '{print $1+$2}')
+done
