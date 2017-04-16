@@ -1,4 +1,4 @@
-photonstates=2
+photonstates=5
 initialstate=3
 
 gcoupl=0.2
