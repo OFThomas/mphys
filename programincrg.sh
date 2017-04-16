@@ -1,4 +1,4 @@
-photonstates=5
+photonstates=7
 initialstate=3
 
 gcoupl=0.1
@@ -10,7 +10,7 @@ mkdir ./dimer/raw$photonstates
 mkdir ./dimer/$photonstates
 
 gfortran matrixfns.f90 mastereq.f90 -o mastereq.out -llapack -lblas
-
+date
  time while [ 0 -lt $(echo $gcoupl $end_gcoupl | awk '{if ($1<=$2) print 1; else print 0;}') ]
 
 do
