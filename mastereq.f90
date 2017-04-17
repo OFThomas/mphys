@@ -43,7 +43,7 @@ timesteps=nint(total_time/timestep)
 print*, 'Time simulated 		', 'Timestep 		', 'Total steps '
 print*, total_time, timestep, timesteps
 print*, n_b, 'Photon states', n_a, 'Atom states'
-
+print*, gcoupl, 'g coupling', jcoupl, 'J coupling'
 !Matrix operators
 
 ! creation, annihilation, nummatrix, bident

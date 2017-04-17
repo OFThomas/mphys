@@ -1,7 +1,7 @@
 photonstates=7
 initialstate=3
 
-gcoupl=0.1
+gcoupl=0.2
 end_gcoupl=1
 gincr=0.2
 
@@ -14,6 +14,7 @@ date
  time while [ 0 -lt $(echo $gcoupl $end_gcoupl | awk '{if ($1<=$2) print 1; else print 0;}') ]
 
 do
+date
   time ./mastereq.out << EOF 
   $photonstates
   $initialstate
