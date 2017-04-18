@@ -5,7 +5,7 @@ gcoupl=0.2
 end_gcoupl=1
 gincr=0.2
 
-jcoupl=0.5
+jcoupl=1.0
 mkdir ./dimer/raw$photonstates
 mkdir ./dimer/$photonstates
 
