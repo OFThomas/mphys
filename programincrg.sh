@@ -1,11 +1,11 @@
 photonstates=7
 initialstate=3
 
-gcoupl=0.2
+gcoupl=0.1
 end_gcoupl=1
 gincr=0.2
 
-jcoupl=1.0
+jcoupl=0.5
 mkdir ./dimer/raw$photonstates
 mkdir ./dimer/$photonstates
 
