@@ -53,20 +53,21 @@ EOF
 EOF
 
  gnuplot << EOF
-     set xlabel "Coupling, g "
-     set ylabel "En "
-     set yrange [-2.4:3.4]
+     set xlabel "g"
+     set ylabel " {E}_{n} "
+     set yrange [-3.1:3.4]
+     set xrange [0:2]
+     set xtics 0,0.25,2
      set grid
      unset key
-     set title "Hamiltonian eigenvalues"
-     set term png
+     set term png enhanced
      set output "./heigen.png"
-    # plot for [col=2:101:1] "heigen.txt" using col
-     set term wxt
-     replot
+     plot for [col=2:101:1] "heigen.txt" using 1:col linecolor 1 pointtype 1
+     #set term wxt
+     #replot
 EOF
 # display "./n.png" &
 #display "./sigz.png" &
 #display "./sigx.png" &
 #display "./sigy.png" &
-#display "./heigen.png" &
+display "./heigen.png" &
